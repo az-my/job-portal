@@ -2,9 +2,12 @@ import type { ScraperSource } from './types';
 
 export const SCRAPER_SOURCES: ScraperSource[] = [
   { name: 'jobstreet', baseUrl: 'https://id.jobstreet.com' },
+  { name: 'dealls', baseUrl: 'https://dealls.com' },
 ];
 
 export const JOBSTREET_GRAPHQL = 'https://id.jobstreet.com/graphql';
+
+export const DEALLS_API = 'https://api.sejutacita.id/v1/explore-job/job';
 
 export const DEFAULT_HEADERS: Record<string, string> = {
   accept: '*/*',
@@ -21,6 +24,15 @@ export const DEFAULT_HEADERS: Record<string, string> = {
   'seek-request-country': 'ID',
   'x-custom-features': 'application/features.seek.all+json',
   'x-seek-site': 'chalice',
+};
+
+export const DEALLS_HEADERS: Record<string, string> = {
+  accept: '*/*',
+  'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
+  'content-type': 'application/json',
+  'x-client-app-name': 'Deall-Talent-Web',
+  'x-client-app-version': '2.49.52',
+  Referer: 'https://dealls.com/',
 };
 
 export const DEFAULT_TIMEOUT = 30_000;

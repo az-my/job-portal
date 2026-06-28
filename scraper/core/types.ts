@@ -24,6 +24,7 @@ export interface Job {
   sourceId?: string;
   url?: string;
   logoUrl?: string;
+  raw?: string;
 }
 
 export interface Application {

@@ -78,20 +78,22 @@ export function DataTable<TData, TValue>({
             placeholder={searchPlaceholder}
             value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
             onChange={(e) => table.getColumn(searchKey)?.setFilterValue(e.target.value)}
-            className="h-8 pl-8 max-w-sm rounded-none border-zinc-900 text-xs"
+            className="h-8 pl-8 max-w-sm border-border text-base"
           />
           {!!table.getColumn(searchKey)?.getFilterValue() && (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => table.getColumn(searchKey)?.setFilterValue("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <X className="size-4" />
-            </button>
+            </Button>
           )}
         </div>
       )}
 
-      <div className="rounded-none border border-zinc-900">
+      <div className="border border-border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -129,13 +131,13 @@ export function DataTable<TData, TValue>({
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           {table.getFilteredRowModel().rows.length} row{table.getFilteredRowModel().rows.length !== 1 ? "s" : ""}
         </p>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            size="xs"
+            size="sm"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
@@ -143,18 +145,18 @@ export function DataTable<TData, TValue>({
           </Button>
           <Button
             variant="outline"
-            size="xs"
+            size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
             <ChevronLeft className="size-4" />
           </Button>
-          <span className="text-sm text-muted-foreground tabular-nums">
+          <span className="text-base text-muted-foreground tabular-nums">
             {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
           </span>
           <Button
             variant="outline"
-            size="xs"
+            size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
@@ -162,7 +164,7 @@ export function DataTable<TData, TValue>({
           </Button>
           <Button
             variant="outline"
-            size="xs"
+            size="sm"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >

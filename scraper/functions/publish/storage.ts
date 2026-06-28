@@ -53,16 +53,39 @@ export function mergeJobs(newJobs: Job[]): { inserted: number; updated: number }
   return { inserted, updated };
 }
 
+export function cleanupJobs(daysOld: number = 7): { removed: number; removedManual: number } {
+  const db = readDb();
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - daysOld);
+  let removed = 0;
+  let removedManual = 0;
+
+  const before = db.jobs.length;
+  db.jobs = db.jobs.filter(j => {
+    if (!j.source) { removedManual++; return false; }
+    const d = new Date(j.createdAt);
+    if (isNaN(d.getTime()) || d < cutoff) { removed++; return false; }
+    return true;
+  });
+
+  if (db.jobs.length !== before) {
+    writeDb(db);
+  }
+  return { removed, removedManual };
+}
+
 export function getAllJobs(): Job[] {
   return readDb().jobs;
 }
 
 export function getStats() {
   const db = readDb();
+  const sourceCounts: Record<string, number> = {};
+  for (const j of db.jobs) {
+    sourceCounts[j.source || 'manual'] = (sourceCounts[j.source || 'manual'] || 0) + 1;
+  }
   return {
     totalJobs: db.jobs.length,
-    totalUsers: db.users.length,
-    totalApplications: db.applications.length,
-    scrapedJobs: db.jobs.filter(j => j.source === 'jobstreet').length,
+    sourceCounts,
   };
 }
