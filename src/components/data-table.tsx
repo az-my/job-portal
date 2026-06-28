@@ -78,7 +78,7 @@ export function DataTable<TData, TValue>({
             placeholder={searchPlaceholder}
             value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
             onChange={(e) => table.getColumn(searchKey)?.setFilterValue(e.target.value)}
-            className="h-8 pl-8 max-w-sm"
+            className="h-8 pl-8 max-w-sm rounded-none border-zinc-900 text-xs"
           />
           {!!table.getColumn(searchKey)?.getFilterValue() && (
             <button
@@ -91,7 +91,7 @@ export function DataTable<TData, TValue>({
         </div>
       )}
 
-      <div className="rounded-md border">
+      <div className="rounded-none border border-zinc-900">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
