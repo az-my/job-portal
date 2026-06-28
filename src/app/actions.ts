@@ -2,6 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { getDb, saveDb, User, Job, Application } from "@/lib/db";
+import { exec } from "child_process";
+import { promisify } from "util";
+import path from "path";
+
+const execAsync = promisify(exec);
 
 // Helper to generate IDs
 const generateId = (prefix: string) => `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
@@ -133,4 +138,19 @@ export async function updateApplicationStatus(applicationId: string, status: App
   
   revalidatePath("/");
   return { success: true };
+}
+
+export async function scrapeJobStreetAction(maxPages: number = 3) {
+  try {
+    const cmd = `npx tsx index.ts ${maxPages}`;
+    const { stdout } = await execAsync(cmd, { cwd: path.join(process.cwd(), "scraper") });
+    const lines = stdout.split("\n").filter((l: string) => l.includes("Done:"));
+    const match = lines[0]?.match(/Done: (\d+) jobs found/);
+    const count = match ? parseInt(match[1], 10) : 0;
+    revalidatePath("/");
+    return { success: true, count };
+  } catch (err: any) {
+    console.error("JobStreet scraper execution failed:", err);
+    return { success: false, error: err.message || "Failed to execute scraper." };
+  }
 }
