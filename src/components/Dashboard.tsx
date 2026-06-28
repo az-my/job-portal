@@ -21,7 +21,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { User, Job, Application } from "@/lib/db";
-import { addUser, addJob, applyJob, updateApplicationStatus } from "@/app/actions";
+import { addUser, addJob, applyJob, updateApplicationStatus, getUsers, getJobs } from "@/app/actions";
 
 interface DashboardProps {
   initialUsers: User[];
