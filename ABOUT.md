@@ -1,6 +1,6 @@
 # About This Project
 
-**Job Aggregator** — a local-first job listing aggregator that scrapes Indonesian job boards (JobStreet and Dealls), normalizes the results into a single schema, and displays them in a high-density, searchable data table. Built with Next.js 16 (App Router), React 19, Tailwind CSS v4, and shadcn/ui.
+**Job Aggregator** — a local-first job listing aggregator that scrapes Indonesian job boards (JobStreet, Dealls, and Kalibrr), normalizes the results into a single schema, and displays them in a high-density, searchable data table. Built with Next.js 16 (App Router), React 19, Tailwind CSS v4, and shadcn/ui.
 
 > Note: the project began as a full job *portal* (candidates, employers, admins, applications) — traces of that remain in the README, the `User`/`Application` types, and `scripts/scrape.py`. It has since been refactored into a **pure aggregator**: scrape → normalize → store → browse.
 
@@ -28,9 +28,10 @@ source/max_pages inputs, plus a daily cron at 01:00 UTC. It commits the updated 
 back to the repo. The frontend never triggers scraping — it only reads the database.
 ```
 
-1. **Collect** — two source adapters fetch raw listings:
+1. **Collect** — three source adapters fetch raw listings:
    - **JobStreet** (`scraper/jobstreet.py`): POSTs to the `id.jobstreet.com/graphql` endpoint using the `JobSearchV6` / `JobCountsV6` queries, with browser-mimicking headers and hardcoded session/sol IDs (`scraper/config.py`).
    - **Dealls** (`scraper/dealls.py`): GETs the public `api.sejutacita.id/v1/explore-job/job` REST endpoint, paginated 18 per page.
+   - **Kalibrr** (`scraper/kalibrr.py`): GETs `www.kalibrr.id/kjs/job_board/search` with `limit`/`offset` pagination and `sort=Freshness`. Deliberately avoids the `_next/data/<buildId>/` routes — the build id rotates on every Kalibrr deploy and those pages ignore pagination.
 2. **Transform** — `normalize.py` maps both raw shapes into one `Job` dict (title, company, location, type, salary formatted as `Rp…jt`, source, sourceId, url, plus the full raw JSON payload for the raw-response viewer).
 3. **Publish** — `storage.py` merges into `data/db.json`, upserting by `sourceId`. A cleanup pass removes jobs older than 7 days and any job without a `source` (leftover manual entries). Dealls listings are also pre-filtered to the last 7 days (`main.py`).
 4. **Browse** — the single-page UI (`Dashboard.tsx`) renders a TanStack React Table with search, sorting, and pagination (25/page). Each row has an eye icon opening a detail dialog with two tabs — parsed fields and the raw API response — plus an external link to the original posting. The UI is read-only; scraping happens only via GitHub Actions or the scraper CLI.
@@ -47,7 +48,7 @@ back to the repo. The frontend never triggers scraping — it only reads the dat
 | `scraper/` | **Standalone Python scraper** (stdlib only, no pip deps) — the only way to scrape |
 | `scraper/main.py` | CLI entry + orchestration: runs sources, 7-day filter, cleanup, summary |
 | `scraper/config.py` | Endpoints, headers, session IDs |
-| `scraper/jobstreet.py`, `scraper/dealls.py` | Source collectors |
+| `scraper/jobstreet.py`, `scraper/dealls.py`, `scraper/kalibrr.py` | Source collectors |
 | `scraper/normalize.py`, `scraper/storage.py` | Transform to unified Job schema; merge/cleanup db.json |
 | `.github/workflows/scrape.yml` | Scheduled + manual scrape runs; commits `db.json` back to the repo |
 | `data/db.json` | The database, refreshed by the workflow |
@@ -56,7 +57,7 @@ back to the repo. The frontend never triggers scraping — it only reads the dat
 
 Defined in `src/lib/db.ts` (the Python scraper produces the same shape):
 
-- **`Job`** — `id`, `title`, `company`, `location`, `type` (`full-time` | `part-time` | `remote` | `contract`), `description`, `salary`, `source` (`jobstreet` | `dealls`), `sourceId` (dedup key), `url`, `logoUrl`, `requirements`, `raw` (stringified original API response), `createdAt`.
+- **`Job`** — `id`, `title`, `company`, `location`, `type` (`full-time` | `part-time` | `remote` | `contract`), `description`, `salary`, `source` (`jobstreet` | `dealls` | `kalibrr`), `sourceId` (dedup key), `url`, `logoUrl`, `requirements`, `raw` (stringified original API response), `createdAt`.
 - **`User`** / **`Application`** — legacy from the portal phase; still in the schema and `db.json` but unused by the current UI.
 
 ## Running It
@@ -73,7 +74,8 @@ Scraping (CLI):
 python scraper/main.py                # 3 pages, all sources
 python scraper/main.py 5              # 5 pages, all sources
 python scraper/main.py 5 jobstreet    # 5 pages, JobStreet only
-python scraper/main.py 5 dealls      # 5 pages, Dealls only
+python scraper/main.py 5 dealls       # 5 pages, Dealls only
+python scraper/main.py 5 kalibrr      # 5 pages, Kalibrr only
 ```
 
 Scraping (CI): GitHub → Actions → "Scrape Jobs" → Run workflow (pick source + max pages). Also runs daily at 01:00 UTC and commits the refreshed `db.json`.

@@ -4,24 +4,26 @@ Usage:
     python scraper/main.py [max_pages] [source]
 
     max_pages  pages per source (default 3)
-    source     all | jobstreet | dealls (default all)
+    source     all | jobstreet | dealls | kalibrr (default all)
 """
 import sys
 from datetime import datetime, timedelta, timezone
 
 import dealls
 import jobstreet
+import kalibrr
 from normalize import normalize_jobs
 from storage import cleanup_jobs, get_stats, merge_jobs
 
-VALID_SOURCES = ("all", "jobstreet", "dealls")
+VALID_SOURCES = ("all", "jobstreet", "dealls", "kalibrr")
 
 
-def _filter_recent_dealls(docs, days=7):
+def _filter_recent(docs, date_key, days=7):
+    """Keep docs whose date_key is within the last `days` (undated docs pass)."""
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     recent = []
     for doc in docs:
-        published = doc.get("publishedAt")
+        published = doc.get(date_key)
         if not published:
             recent.append(doc)
             continue
@@ -49,7 +51,7 @@ def run_jobstreet(max_pages):
 def run_dealls(max_pages):
     print("[scraper] Starting Dealls scrape...")
     raw = dealls.collect_jobs(max_pages)
-    recent = _filter_recent_dealls(raw)
+    recent = _filter_recent(raw, "publishedAt")
     skipped = len(raw) - len(recent)
     if skipped > 0:
         print(f"[scraper] Dealls: skipped {skipped} jobs older than 7 days")
@@ -62,9 +64,25 @@ def run_dealls(max_pages):
     return {"source": "dealls", "found": len(recent), "inserted": inserted, "updated": updated}
 
 
+def run_kalibrr(max_pages):
+    print("[scraper] Starting Kalibrr scrape...")
+    raw = kalibrr.collect_jobs(max_pages)
+    recent = _filter_recent(raw, "activation_date")
+    skipped = len(raw) - len(recent)
+    if skipped > 0:
+        print(f"[scraper] Kalibrr: skipped {skipped} jobs older than 7 days")
+    if not recent:
+        print("[scraper] Kalibrr returned no recent data, skipping.")
+        return None
+
+    inserted, updated = merge_jobs(normalize_jobs(recent, "kalibrr"))
+    print(f"[scraper] Kalibrr done: {len(recent)} jobs found, {inserted} new, {updated} updated")
+    return {"source": "kalibrr", "found": len(recent), "inserted": inserted, "updated": updated}
+
+
 def run_scraper(max_pages=3, source="all"):
     results = []
-    runners = {"jobstreet": run_jobstreet, "dealls": run_dealls}
+    runners = {"jobstreet": run_jobstreet, "dealls": run_dealls, "kalibrr": run_kalibrr}
 
     for name, runner in runners.items():
         if source not in ("all", name):

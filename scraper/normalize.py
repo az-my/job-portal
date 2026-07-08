@@ -1,6 +1,8 @@
 """Transform raw source payloads into the unified Job schema."""
+import html
 import json
 import random
+import re
 import string
 from datetime import datetime, timezone
 
@@ -110,7 +112,74 @@ def normalize_dealls(doc):
     return job
 
 
+def _strip_html(text):
+    if not text:
+        return ""
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = html.unescape(text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def normalize_kalibrr(job):
+    company = job.get("company") or {}
+    company_name = job.get("company_name") or company.get("name") or "Unknown Company"
+    title = job.get("name") or "Untitled"
+
+    address = (job.get("google_location") or {}).get("address_components") or {}
+    location = ", ".join(p for p in [address.get("city"), address.get("country")] if p)
+
+    tenure = (job.get("tenure") or "").lower()
+    if job.get("is_work_from_home"):
+        job_type = "remote"
+    elif "part" in tenure:
+        job_type = "part-time"
+    elif "contract" in tenure or "freelance" in tenure or "project" in tenure or "intern" in tenure:
+        job_type = "contract"
+    else:
+        job_type = "full-time"
+
+    base = job.get("base_salary")
+    maximum = job.get("maximum_salary")
+    salary = _format_salary(
+        int(base) if base else None,
+        int(maximum) if maximum else None,
+    )
+
+    description = _strip_html(job.get("description"))
+    qualifications = _strip_html(job.get("qualifications"))
+
+    job_id = job.get("id")
+    company_code = company.get("code") or ""
+    slug = job.get("slug") or ""
+
+    normalized = {
+        "id": generate_id("job"),
+        "title": title,
+        "company": company_name,
+        "location": location,
+        "type": job_type,
+        "description": description or f"{title} at {company_name}",
+        "salary": salary,
+        "postedBy": "scraper",
+        "createdAt": job.get("activation_date") or job.get("created_at") or _now_iso(),
+        "source": "kalibrr",
+        "sourceId": str(job_id),
+        "url": f"https://www.kalibrr.id/id-ID/c/{company_code}/jobs/{job_id}/{slug}",
+        "logoUrl": company.get("logo_small") or "",
+        "raw": json.dumps(job, ensure_ascii=False),
+    }
+    if qualifications:
+        normalized["requirements"] = qualifications
+    return normalized
+
+
+NORMALIZERS = {
+    "jobstreet": normalize_jobstreet,
+    "dealls": normalize_dealls,
+    "kalibrr": normalize_kalibrr,
+}
+
+
 def normalize_jobs(items, source):
-    if source == "dealls":
-        return [normalize_dealls(d) for d in items]
-    return [normalize_jobstreet(i) for i in items]
+    normalizer = NORMALIZERS[source]
+    return [normalizer(item) for item in items]

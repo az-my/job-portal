@@ -11,6 +11,7 @@ on:
           - all
           - jobstreet
           - dealls
+          - kalibrr
       max_pages:
         description: "Max pages per source"
         type: string

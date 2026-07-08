@@ -29,6 +29,15 @@ JOBSTREET_HEADERS = {
     ]),
 }
 
+KALIBRR_API = "https://www.kalibrr.id/kjs/job_board/search"
+
+KALIBRR_HEADERS = {
+    "accept": "application/json",
+    "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+    "Referer": "https://www.kalibrr.id/id-ID/home",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+}
+
 DEALLS_HEADERS = {
     "accept": "*/*",
     "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
