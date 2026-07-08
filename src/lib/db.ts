@@ -1,9 +1,51 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import type { Job, DbSchema } from '../../scraper/core/types';
 
-export type { Job, DbSchema };
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'employer' | 'candidate';
+  createdAt: string;
+  bio?: string;
+  skills?: string[];
+  resumeUrl?: string;
+}
+
+export interface Job {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  type: 'full-time' | 'part-time' | 'remote' | 'contract';
+  description: string;
+  salary: string;
+  postedBy: string;
+  createdAt: string;
+  requirements?: string;
+  source?: string;
+  sourceId?: string;
+  url?: string;
+  logoUrl?: string;
+  raw?: string;
+}
+
+export interface Application {
+  id: string;
+  jobId: string;
+  userId: string;
+  status: 'applied' | 'interviewing' | 'offered' | 'rejected';
+  resumeUrl?: string;
+  coverLetter?: string;
+  appliedAt: string;
+}
+
+export interface DbSchema {
+  users: User[];
+  jobs: Job[];
+  applications: Application[];
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
