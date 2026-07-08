@@ -9,9 +9,8 @@ from config import DEALLS_API, DEALLS_HEADERS, REQUEST_TIMEOUT
 def _fetch_page(page, limit=18):
     params = urllib.parse.urlencode({
         "page": page,
-        "sortParam": "mostRelevant",
-        "sortBy": "asc",
-        "boostTheBoostedJob": "true",
+        "sortParam": "publishedAt",
+        "sortBy": "desc",
         "published": "true",
         "limit": limit,
         "status": "active",
