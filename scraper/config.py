@@ -1,9 +1,13 @@
+import uuid
+
 JOBSTREET_GRAPHQL = "https://id.jobstreet.com/graphql"
 
 DEALLS_API = "https://api.sejutacita.id/v1/explore-job/job"
 
-SESSION_ID = "b15aa248-7c65-44d3-8680-fd47f5e8dd2e"
-SOL_ID = "42c1c002-9fc0-406e-8fad-e87359f019bd"
+# Client-generated tracking IDs; JobStreet accepts any UUID, so fresh ones
+# per run avoid depending on a captured browser session that could expire.
+SESSION_ID = str(uuid.uuid4())
+SOL_ID = str(uuid.uuid4())
 
 JOBSTREET_HEADERS = {
     "accept": "*/*",

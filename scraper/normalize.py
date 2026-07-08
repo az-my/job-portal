@@ -42,6 +42,14 @@ EMPLOYMENT_TYPE_MAP = {
 }
 
 
+JOBSTREET_WORK_TYPE_MAP = {
+    "full time": "full-time",
+    "part time": "part-time",
+    "contract/temp": "contract",
+    "casual/vacation": "part-time",
+}
+
+
 def normalize_jobstreet(item):
     bullet_points = item.get("bulletPoints")
     if isinstance(bullet_points, list):
@@ -51,22 +59,40 @@ def normalize_jobstreet(item):
 
     advertiser = item.get("advertiser") or {}
 
-    return {
+    locations = item.get("locations") or []
+    location = ", ".join(l.get("label", "") for l in locations if l.get("label"))
+
+    work_types = item.get("workTypes") or []
+    job_type = JOBSTREET_WORK_TYPE_MAP.get((work_types[0] if work_types else "").lower(), "full-time")
+
+    classifications = item.get("classifications") or []
+    classification = ", ".join(
+        (c.get("classification") or {}).get("description", "")
+        for c in classifications
+        if (c.get("classification") or {}).get("description")
+    )
+
+    listing_date = (item.get("listingDate") or {}).get("dateTimeUtc")
+
+    job = {
         "id": generate_id("job"),
         "title": item.get("title") or "Untitled",
         "company": advertiser.get("description") or "Unknown Company",
-        "location": "",
-        "type": "full-time",
-        "description": description,
+        "location": location,
+        "type": job_type,
+        "description": description or classification,
         "salary": item.get("salaryLabel") or "",
         "postedBy": "scraper",
-        "createdAt": _now_iso(),
+        "createdAt": listing_date or _now_iso(),
         "source": "jobstreet",
         "sourceId": str(item.get("id")),
         "url": f"https://id.jobstreet.com/jobs/{item.get('id')}",
         "logoUrl": "",
         "raw": json.dumps(item, ensure_ascii=False),
     }
+    if classification:
+        job["requirements"] = classification
+    return job
 
 
 def normalize_dealls(doc):

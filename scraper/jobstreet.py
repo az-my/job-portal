@@ -14,6 +14,7 @@ COMMON_VARS = {
     "siteKey": "ID",
     "solId": SOL_ID,
     "userSessionId": SESSION_ID,
+    "sortMode": "ListedDate",
 }
 
 JOB_SEARCH_QUERY = """
@@ -29,7 +30,23 @@ JOB_SEARCH_QUERY = """
         }
         bulletPoints
         salaryLabel
-        listingDate { __typename }
+        listingDate {
+          dateTimeUtc
+          __typename
+        }
+        locations {
+          label
+          countryCode
+          __typename
+        }
+        workTypes
+        classifications {
+          classification {
+            description
+            __typename
+          }
+          __typename
+        }
       __typename
       }
       __typename

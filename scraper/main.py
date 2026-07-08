@@ -18,12 +18,16 @@ from storage import cleanup_jobs, get_stats, merge_jobs
 VALID_SOURCES = ("all", "jobstreet", "dealls", "kalibrr")
 
 
-def _filter_recent(docs, date_key, days=7):
-    """Keep docs whose date_key is within the last `days` (undated docs pass)."""
+def _filter_recent(docs, get_date, days=7):
+    """Keep docs whose date (via get_date key or callable) is within the last `days`; undated docs pass."""
+    if isinstance(get_date, str):
+        key = get_date
+        get_date = lambda doc: doc.get(key)
+
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     recent = []
     for doc in docs:
-        published = doc.get(date_key)
+        published = get_date(doc)
         if not published:
             recent.append(doc)
             continue
@@ -38,14 +42,18 @@ def _filter_recent(docs, date_key, days=7):
 
 def run_jobstreet(max_pages):
     print("[scraper] Starting JobStreet scrape...")
-    items = jobstreet.collect_jobs(max_pages)
-    if not items:
-        print("[scraper] JobStreet returned no data, skipping.")
+    raw = jobstreet.collect_jobs(max_pages)
+    recent = _filter_recent(raw, lambda item: (item.get("listingDate") or {}).get("dateTimeUtc"))
+    skipped = len(raw) - len(recent)
+    if skipped > 0:
+        print(f"[scraper] JobStreet: skipped {skipped} jobs older than 7 days")
+    if not recent:
+        print("[scraper] JobStreet returned no recent data, skipping.")
         return None
 
-    inserted, updated = merge_jobs(normalize_jobs(items, "jobstreet"))
-    print(f"[scraper] JobStreet done: {len(items)} jobs found, {inserted} new, {updated} updated")
-    return {"source": "jobstreet", "found": len(items), "inserted": inserted, "updated": updated}
+    inserted, updated = merge_jobs(normalize_jobs(recent, "jobstreet"))
+    print(f"[scraper] JobStreet done: {len(recent)} jobs found, {inserted} new, {updated} updated")
+    return {"source": "jobstreet", "found": len(recent), "inserted": inserted, "updated": updated}
 
 
 def run_dealls(max_pages):

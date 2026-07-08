@@ -28,19 +28,24 @@ def write_db(db):
         f.write("\n")
 
 
+def _dedup_key(job):
+    # keyed by (source, sourceId): numeric ids can collide across sources
+    return (job.get("source"), job.get("sourceId"))
+
+
 def merge_jobs(new_jobs):
     db = read_db()
-    by_source_id = {j["sourceId"]: i for i, j in enumerate(db["jobs"]) if j.get("sourceId")}
+    by_key = {_dedup_key(j): i for i, j in enumerate(db["jobs"]) if j.get("sourceId")}
     inserted = 0
     updated = 0
 
     for job in new_jobs:
-        existing_index = by_source_id.get(job.get("sourceId"), -1)
+        existing_index = by_key.get(_dedup_key(job), -1)
         if existing_index >= 0:
             db["jobs"][existing_index] = {**db["jobs"][existing_index], **job}
             updated += 1
         else:
-            by_source_id[job["sourceId"]] = len(db["jobs"])
+            by_key[_dedup_key(job)] = len(db["jobs"])
             db["jobs"].append(job)
             inserted += 1
 
