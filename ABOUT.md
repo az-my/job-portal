@@ -18,12 +18,14 @@
                                                                                            ▼
                                                                                      data/db.json
                                                                                            │
-┌─────────────────────────────── Next.js app (src/) ────────────────────────────────────────┼──┐
+┌─────────────────────────────── Next.js app (src/) — read-only ────────────────────────────┼──┐
 │                                                                                           ▼  │
 │  app/page.tsx (force-dynamic) ──► lib/db.ts (reads db.json) ──► components/Dashboard.tsx     │
-│                                                                                              │
-│  app/actions.ts: "Scrape" button ──► exec `npx tsx index.ts 5` in scraper/ ──► revalidate    │
 └──────────────────────────────────────────────────────────────────────────────────────────────┘
+
+The scraper runs via GitHub Actions (`.github/workflows/scrape.yml`): manual trigger with
+source/max_pages inputs, plus a daily cron at 01:00 UTC. It commits the updated `db.json`
+back to the repo. The frontend never triggers scraping — it only reads the database.
 ```
 
 1. **Collect** — two source adapters fetch raw listings:
@@ -31,24 +33,23 @@
    - **Dealls** (`scraper/functions/collect/dealls.ts`): GETs the public `api.sejutacita.id/v1/explore-job/job` REST endpoint, paginated 18 per page.
 2. **Transform** — `normalize.ts` maps both raw shapes into one `Job` interface (title, company, location, type, salary formatted as `Rp…jt`, source, sourceId, url, plus the full raw JSON payload for the raw-response viewer).
 3. **Publish** — `storage.ts` merges into `data/db.json`, upserting by `sourceId`. A cleanup pass removes jobs older than 7 days and any job without a `source` (leftover manual entries). Dealls listings are also pre-filtered to the last 7 days (`orchestrator.ts`).
-4. **Browse** — the single-page UI (`Dashboard.tsx`) renders a TanStack React Table with search, sorting, and pagination (25/page). Each row has an eye icon opening a detail dialog with two tabs — parsed fields and the raw API response — plus an external link to the original posting. A "Scrape" button triggers the whole pipeline from the browser via a Server Action.
+4. **Browse** — the single-page UI (`Dashboard.tsx`) renders a TanStack React Table with search, sorting, and pagination (25/page). Each row has an eye icon opening a detail dialog with two tabs — parsed fields and the raw API response — plus an external link to the original posting. The UI is read-only; scraping happens only via GitHub Actions or the scraper CLI.
 
 ## Directory Layout
 
 | Path | Purpose |
 |---|---|
 | `src/app/page.tsx` | Entry page; reads `db.json` server-side (`force-dynamic`) |
-| `src/app/actions.ts` | Server Actions: `getJobs`, `scrapeAllAction` (shells out to the scraper) |
 | `src/lib/db.ts` | Tiny JSON-file "database" layer over `data/db.json` |
-| `src/components/Dashboard.tsx` | Main client UI: header, scrape button, jobs table, detail dialog |
+| `src/components/Dashboard.tsx` | Main client UI: header, jobs table, detail dialog (read-only) |
 | `src/components/data-table.tsx` | Generic TanStack table wrapper (search, sort, pagination) |
 | `src/components/ui/` | shadcn/ui primitives (button, card, dialog, input, select, table, tabs…) |
 | `scraper/` | **Standalone package** (own `package.json`, `tsconfig`, `node_modules`) run with `tsx` |
 | `scraper/orchestrator.ts` | Runs both sources, applies 7-day filters, cleanup, prints summary |
 | `scraper/core/` | Config (endpoints, headers, session IDs), shared types, utils |
 | `scraper/functions/` | FBA-style pipeline: `collect/` → `transform/` → `publish/` |
-| `scripts/scrape.py` | Legacy Python Dealls scraper from the portal era (`npm run scrape`) — superseded by `scraper/` |
-| `data/db.json` | The database: currently ~243 jobs (220 JobStreet, 23 Dealls) |
+| `.github/workflows/scrape.yml` | Scheduled + manual scrape runs; commits `db.json` back to the repo |
+| `data/db.json` | The database, refreshed by the workflow |
 
 ## Data Model
 
@@ -63,18 +64,21 @@ Defined in `scraper/core/types.ts` and re-exported by `src/lib/db.ts`:
 npm install            # app deps
 cd scraper && npm install && cd ..   # scraper deps (separate package)
 
-npm run dev            # http://localhost:3000 — click "Scrape" to fetch fresh jobs
+npm run dev            # http://localhost:3000 — read-only view of data/db.json
 ```
 
-Scraper directly from the CLI:
+Scraping (CLI):
 
 ```bash
 cd scraper
-npm run scrape         # 3 pages per source (default)
-npm run scrape:5       # 5 pages
-npm run scrape:10      # 10 pages
+npx tsx index.ts                # 3 pages, all sources
+npx tsx index.ts 5              # 5 pages, all sources
+npx tsx index.ts 5 jobstreet    # 5 pages, JobStreet only
+npx tsx index.ts 5 dealls       # 5 pages, Dealls only
 npm run typecheck
 ```
+
+Scraping (CI): GitHub → Actions → "Scrape Jobs" → Run workflow (pick source + max pages). Also runs daily at 01:00 UTC and commits the refreshed `db.json`.
 
 ## Design & Conventions
 
@@ -89,5 +93,4 @@ npm run typecheck
 - `README.md` still describes the old portal (persona switching, applications, pre-seeded admin) and no longer matches the code.
 - JobStreet normalization leaves `location` empty and hardcodes `type: 'full-time'` (the GraphQL query doesn't fetch those fields); JobStreet items get `createdAt: now`, so the 7-day cleanup measures *scrape* age, not posting age.
 - JobStreet session/sol IDs are hardcoded in `scraper/core/config.ts` and may expire.
-- `scrapeAllAction` parses the scraper's stdout (`"Done: N jobs found"`) to report counts — fragile if log wording changes.
-- `db.json` still contains 8 legacy users and 1 application that nothing reads.
+- `db.json` still contains legacy `users`/`applications` arrays that nothing reads.

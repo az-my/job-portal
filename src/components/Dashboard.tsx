@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import type { Job } from "@/lib/db";
-import { getJobs, scrapeAllAction } from "@/app/actions";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +12,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Briefcase, ExternalLink, RefreshCw, Eye, FileJson, Columns2 } from "lucide-react";
+import { Briefcase, ExternalLink, Eye, FileJson, Columns2 } from "lucide-react";
 
 interface DashboardProps {
   initialJobs: Job[];
@@ -91,31 +90,16 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
 }
 
 export default function Dashboard({ initialJobs }: DashboardProps) {
-  const [jobs, setJobs] = useState<Job[]>(initialJobs);
-  const [scraping, startScrape] = useTransition();
-  const [status, setStatus] = useState<{ text: string; error?: boolean } | null>(null);
+  const jobs = initialJobs;
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
-  const scrapeCount = jobs.filter((j) => j.source).length;
-  const totalCount = jobs.length;
-
-  const handleScrape = () => {
-    startScrape(async () => {
-      try {
-        const res = await scrapeAllAction(5);
-        if (res.success) {
-          const updated = await getJobs();
-          setJobs(updated);
-          setStatus({ text: `Imported ${res.count} jobs (all sources)` });
-        } else {
-          setStatus({ text: "error" in res ? String(res.error) : "Scrape failed", error: true });
-        }
-      } catch {
-        setStatus({ text: "Scrape failed", error: true });
-      }
-      setTimeout(() => setStatus(null), 5000);
-    });
-  };
+  const lastUpdated = useMemo(() => {
+    const newest = jobs.reduce<string | null>(
+      (max, j) => (!max || j.createdAt > max ? j.createdAt : max),
+      null
+    );
+    return newest ? new Date(newest).toLocaleDateString("en-CA") : null;
+  }, [jobs]);
 
   const columns: ColumnDef<Job>[] = useMemo(
     () => [
@@ -185,27 +169,11 @@ export default function Dashboard({ initialJobs }: DashboardProps) {
             <h1 className="text-base font-bold uppercase tracking-widest">Job Aggregator</h1>
           </div>
           <div className="flex items-center gap-4 text-muted-foreground">
-            <span>{totalCount} jobs</span>
-            {scrapeCount > 0 && <span>{scrapeCount} scraped</span>}
-            <Button variant="outline" onClick={handleScrape} disabled={scraping}>
-              <RefreshCw className={`size-4 ${scraping ? "animate-spin" : ""}`} />
-              {scraping ? "Scraping..." : "Scrape"}
-            </Button>
+            <span>{jobs.length} jobs</span>
+            {lastUpdated && <span>updated {lastUpdated}</span>}
           </div>
         </div>
       </header>
-
-      {status && (
-        <div
-          className={`mb-4 border border-border px-3 py-2 ${
-            status.error
-              ? "bg-destructive/10 text-destructive"
-              : "bg-muted text-foreground"
-          }`}
-        >
-          {status.text}
-        </div>
-      )}
 
       <DataTable columns={columns} data={jobs} searchKey="title" searchPlaceholder="Search jobs..." pageSize={25} />
 
