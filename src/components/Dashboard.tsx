@@ -32,7 +32,6 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
     ["Requirements", job.requirements],
     ["Source", job.source],
     ["Source ID", job.sourceId],
-    ["Posted By", job.postedBy],
     ["Created At", new Date(job.createdAt).toLocaleString()],
     ["URL", job.url],
     ["Logo URL", job.logoUrl],

@@ -7,18 +7,13 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_DIR = os.path.join(PROJECT_ROOT, "data")
 DB_FILE = os.path.join(DB_DIR, "db.json")
 
-EMPTY_DB = {"users": [], "jobs": [], "applications": []}
-
-
 def read_db():
     try:
         with open(DB_FILE, "r", encoding="utf-8") as f:
             db = json.load(f)
     except (OSError, json.JSONDecodeError):
-        return dict(EMPTY_DB)
-    for key in EMPTY_DB:
-        db.setdefault(key, [])
-    return db
+        return {"jobs": []}
+    return {"jobs": db.get("jobs") or []}
 
 
 def write_db(db):
