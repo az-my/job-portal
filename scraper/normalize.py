@@ -196,10 +196,87 @@ def normalize_kalibrr(job):
     return normalized
 
 
+GLINTS_TYPE_MAP = {
+    "FULL_TIME": "full-time",
+    "PART_TIME": "part-time",
+    "CONTRACT": "contract",
+    "PROJECT_BASED": "contract",
+    "INTERNSHIP": "contract",
+    "DAILY": "part-time",
+}
+
+GLINTS_IMAGE_BASE = "https://images.glints.com/unsafe/glints-dashboard.oss-ap-southeast-1.aliyuncs.com/company-logo"
+
+
+def normalize_glints(job):
+    company = job.get("company") or {}
+    company_name = company.get("name") or "Unknown Company"
+    title = job.get("title") or "Untitled"
+
+    city = (job.get("city") or {}).get("name")
+    formatted = (job.get("location") or {}).get("formattedName")
+    country = (job.get("country") or {}).get("name")
+    location = ", ".join(p for p in [city or formatted, country] if p)
+
+    if (job.get("workArrangementOption") or "").upper() == "REMOTE":
+        job_type = "remote"
+    else:
+        job_type = GLINTS_TYPE_MAP.get(job.get("type") or "", "full-time")
+
+    salary = ""
+    for s in job.get("salaries") or []:
+        min_amount = s.get("minAmount")
+        max_amount = s.get("maxAmount")
+        if not (min_amount or max_amount):
+            continue
+        if (s.get("CurrencyCode") or "IDR") == "IDR":
+            salary = _format_salary(int(min_amount) if min_amount else None,
+                                    int(max_amount) if max_amount else None)
+        else:
+            salary = f"{min_amount or ''}-{max_amount or ''} {s.get('CurrencyCode')}".strip("-")
+        break
+
+    skills = job.get("skills") or []
+    skill_names = ", ".join(
+        (s.get("skill") or {}).get("name", "")
+        for s in skills
+        if (s.get("skill") or {}).get("name")
+    )
+
+    category = (job.get("hierarchicalJobCategory") or {}).get("name")
+    description = f"{title} at {company_name}"
+    if category:
+        description += f" ({category})"
+    if skill_names:
+        description += f". Skills: {skill_names}"
+
+    logo = company.get("logo")
+
+    normalized = {
+        "id": generate_id("job"),
+        "title": title,
+        "company": company_name,
+        "location": location,
+        "type": job_type,
+        "description": description,
+        "salary": salary,
+        "createdAt": job.get("createdAt") or _now_iso(),
+        "source": "glints",
+        "sourceId": str(job.get("id")),
+        "url": f"https://glints.com/id/opportunities/jobs/{job.get('id')}",
+        "logoUrl": f"{GLINTS_IMAGE_BASE}/{logo}" if logo else "",
+        "raw": json.dumps(job, ensure_ascii=False),
+    }
+    if skill_names:
+        normalized["requirements"] = skill_names
+    return normalized
+
+
 NORMALIZERS = {
     "jobstreet": normalize_jobstreet,
     "dealls": normalize_dealls,
     "kalibrr": normalize_kalibrr,
+    "glints": normalize_glints,
 }
 
 

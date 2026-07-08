@@ -4,18 +4,19 @@ Usage:
     python scraper/main.py [max_pages] [source]
 
     max_pages  pages per source (default 3)
-    source     all | jobstreet | dealls | kalibrr (default all)
+    source     all | jobstreet | dealls | kalibrr | glints (default all)
 """
 import sys
 from datetime import datetime, timedelta, timezone
 
 import dealls
+import glints
 import jobstreet
 import kalibrr
 from normalize import normalize_jobs
 from storage import cleanup_jobs, get_stats, merge_jobs
 
-VALID_SOURCES = ("all", "jobstreet", "dealls", "kalibrr")
+VALID_SOURCES = ("all", "jobstreet", "dealls", "kalibrr", "glints")
 
 
 def _filter_recent(docs, get_date, days=7):
@@ -88,9 +89,25 @@ def run_kalibrr(max_pages):
     return {"source": "kalibrr", "found": len(recent), "inserted": inserted, "updated": updated}
 
 
+def run_glints(max_pages):
+    print("[scraper] Starting Glints scrape...")
+    raw = glints.collect_jobs(max_pages)
+    recent = _filter_recent(raw, "createdAt")
+    skipped = len(raw) - len(recent)
+    if skipped > 0:
+        print(f"[scraper] Glints: skipped {skipped} jobs older than 7 days")
+    if not recent:
+        print("[scraper] Glints returned no recent data, skipping.")
+        return None
+
+    inserted, updated = merge_jobs(normalize_jobs(recent, "glints"))
+    print(f"[scraper] Glints done: {len(recent)} jobs found, {inserted} new, {updated} updated")
+    return {"source": "glints", "found": len(recent), "inserted": inserted, "updated": updated}
+
+
 def run_scraper(max_pages=3, source="all"):
     results = []
-    runners = {"jobstreet": run_jobstreet, "dealls": run_dealls, "kalibrr": run_kalibrr}
+    runners = {"jobstreet": run_jobstreet, "dealls": run_dealls, "kalibrr": run_kalibrr, "glints": run_glints}
 
     for name, runner in runners.items():
         if source not in ("all", name):

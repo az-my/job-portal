@@ -12,6 +12,7 @@ on:
           - jobstreet
           - dealls
           - kalibrr
+          - glints
       max_pages:
         description: "Max pages per source"
         type: string

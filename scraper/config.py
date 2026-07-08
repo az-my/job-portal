@@ -42,6 +42,17 @@ KALIBRR_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
 }
 
+GLINTS_GRAPHQL = "https://glints.com/api/v2-alc/graphql?op=searchJobsV3"
+
+GLINTS_HEADERS = {
+    "accept": "*/*",
+    "accept-language": "id",
+    "content-type": "application/json",
+    "x-glints-country-code": "ID",
+    "Referer": "https://glints.com/id/lowongan-kerja",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+}
+
 DEALLS_HEADERS = {
     "accept": "*/*",
     "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
