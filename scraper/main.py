@@ -7,6 +7,7 @@ Usage:
     source     all | jobstreet | dealls | kalibrr | glints (default all)
 """
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
 import dealls
@@ -16,7 +17,15 @@ import kalibrr
 from normalize import normalize_jobs
 from storage import cleanup_jobs, get_stats, merge_jobs
 
-VALID_SOURCES = ("all", "jobstreet", "dealls", "kalibrr", "glints")
+# name -> (collector, date extractor for the 7-day filter)
+SOURCES = {
+    "jobstreet": (jobstreet.collect_jobs, lambda item: (item.get("listingDate") or {}).get("dateTimeUtc")),
+    "dealls": (dealls.collect_jobs, "publishedAt"),
+    "kalibrr": (kalibrr.collect_jobs, "activation_date"),
+    "glints": (glints.collect_jobs, "createdAt"),
+}
+
+VALID_SOURCES = ("all", *SOURCES)
 
 
 def _filter_recent(docs, get_date, days=7):
@@ -41,83 +50,38 @@ def _filter_recent(docs, get_date, days=7):
     return recent
 
 
-def run_jobstreet(max_pages):
-    print("[scraper] Starting JobStreet scrape...")
-    raw = jobstreet.collect_jobs(max_pages)
-    recent = _filter_recent(raw, lambda item: (item.get("listingDate") or {}).get("dateTimeUtc"))
+def _fetch_source(name, max_pages):
+    """Collect + 7-day filter + normalize one source (runs in a worker thread)."""
+    collect, get_date = SOURCES[name]
+    raw = collect(max_pages)
+    recent = _filter_recent(raw, get_date)
     skipped = len(raw) - len(recent)
     if skipped > 0:
-        print(f"[scraper] JobStreet: skipped {skipped} jobs older than 7 days")
-    if not recent:
-        print("[scraper] JobStreet returned no recent data, skipping.")
-        return None
-
-    inserted, updated = merge_jobs(normalize_jobs(recent, "jobstreet"))
-    print(f"[scraper] JobStreet done: {len(recent)} jobs found, {inserted} new, {updated} updated")
-    return {"source": "jobstreet", "found": len(recent), "inserted": inserted, "updated": updated}
-
-
-def run_dealls(max_pages):
-    print("[scraper] Starting Dealls scrape...")
-    raw = dealls.collect_jobs(max_pages)
-    recent = _filter_recent(raw, "publishedAt")
-    skipped = len(raw) - len(recent)
-    if skipped > 0:
-        print(f"[scraper] Dealls: skipped {skipped} jobs older than 7 days")
-    if not recent:
-        print("[scraper] Dealls returned no recent data, skipping.")
-        return None
-
-    inserted, updated = merge_jobs(normalize_jobs(recent, "dealls"))
-    print(f"[scraper] Dealls done: {len(recent)} jobs found, {inserted} new, {updated} updated")
-    return {"source": "dealls", "found": len(recent), "inserted": inserted, "updated": updated}
-
-
-def run_kalibrr(max_pages):
-    print("[scraper] Starting Kalibrr scrape...")
-    raw = kalibrr.collect_jobs(max_pages)
-    recent = _filter_recent(raw, "activation_date")
-    skipped = len(raw) - len(recent)
-    if skipped > 0:
-        print(f"[scraper] Kalibrr: skipped {skipped} jobs older than 7 days")
-    if not recent:
-        print("[scraper] Kalibrr returned no recent data, skipping.")
-        return None
-
-    inserted, updated = merge_jobs(normalize_jobs(recent, "kalibrr"))
-    print(f"[scraper] Kalibrr done: {len(recent)} jobs found, {inserted} new, {updated} updated")
-    return {"source": "kalibrr", "found": len(recent), "inserted": inserted, "updated": updated}
-
-
-def run_glints(max_pages):
-    print("[scraper] Starting Glints scrape...")
-    raw = glints.collect_jobs(max_pages)
-    recent = _filter_recent(raw, "createdAt")
-    skipped = len(raw) - len(recent)
-    if skipped > 0:
-        print(f"[scraper] Glints: skipped {skipped} jobs older than 7 days")
-    if not recent:
-        print("[scraper] Glints returned no recent data, skipping.")
-        return None
-
-    inserted, updated = merge_jobs(normalize_jobs(recent, "glints"))
-    print(f"[scraper] Glints done: {len(recent)} jobs found, {inserted} new, {updated} updated")
-    return {"source": "glints", "found": len(recent), "inserted": inserted, "updated": updated}
+        print(f"[scraper] {name}: skipped {skipped} jobs older than 7 days")
+    return normalize_jobs(recent, name)
 
 
 def run_scraper(max_pages=3, source="all"):
-    results = []
-    runners = {"jobstreet": run_jobstreet, "dealls": run_dealls, "kalibrr": run_kalibrr, "glints": run_glints}
+    selected = list(SOURCES) if source == "all" else [source]
+    print(f"[scraper] Fetching in parallel: {', '.join(selected)}")
 
-    for name, runner in runners.items():
-        if source not in ("all", name):
-            continue
+    # network fetches run concurrently; db.json merges stay serial below
+    with ThreadPoolExecutor(max_workers=len(selected)) as pool:
+        futures = {name: pool.submit(_fetch_source, name, max_pages) for name in selected}
+
+    results = []
+    for name in selected:
         try:
-            result = runner(max_pages)
-            if result:
-                results.append(result)
+            normalized = futures[name].result()
         except Exception as err:
             print(f"[scraper] {name} error: {err}", file=sys.stderr)
+            continue
+        if not normalized:
+            print(f"[scraper] {name} returned no recent data, skipping.")
+            continue
+        inserted, updated = merge_jobs(normalized)
+        print(f"[scraper] {name} done: {len(normalized)} jobs found, {inserted} new, {updated} updated")
+        results.append({"source": name, "found": len(normalized), "inserted": inserted, "updated": updated})
 
     print("[scraper] Running cleanup...")
     removed, removed_manual = cleanup_jobs(7)
