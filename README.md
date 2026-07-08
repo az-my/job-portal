@@ -1,37 +1,31 @@
-# Solid Grid Job Portal
+# Job Aggregator
 
-A high-contrast, high-density, lightning-fast job board platform built with Next.js (App Router + Server Actions + TypeScript) and Tailwind CSS. The UI is designed according to the "Solid Grid" style guidelines (visible dark borders, high contrast, bold typography, maximized data density).
+Aggregates fresh job listings (last 7 days) from Indonesian job boards — **JobStreet**, **Dealls**, and **Kalibrr** — into one high-density, searchable table.
 
-## Key Features
-- **Persona Switching**: Impersonate different roles instantly (Candidate, Employer, Admin).
-- **Interactive Jobs Board**: Live search and job filtering.
-- **My Dashboard**:
-  - Candidates can apply to jobs (adding cover letters, resumes) and track application statuses.
-  - Employers can review applications, download resumes, and progress candidate applications.
-  - Admins have master console controls over users, jobs, and statuses.
-- **Pre-seeded Users**: Preconfigured accounts including **dedisuhaimiacc@gmail.com** (Admin).
+A standalone Python scraper (stdlib only) collects, normalizes, and dedupes listings into `data/db.json`. A read-only Next.js UI renders them. GitHub Actions runs the scraper daily and commits the refreshed data back to the repo.
 
-## Tech Stack
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4
-- **Components**: Shadcn UI / Base UI
-- **Database**: Local JSON File (`data/db.json`)
+```
+GitHub Actions (daily / manual) ──► python scraper/main.py ──► data/db.json ──► Next.js (read-only)
+```
 
-## Getting Started
+## Quick Start
 
-1. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+npm run dev        # http://localhost:3000
+```
 
-2. **Run Dev Server**:
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) to view the portal.
+Scrape manually (needs Python 3.10+, no pip installs):
 
-3. **Build for Production**:
-   ```bash
-   npm run build
-   ```
+```bash
+python scraper/main.py 5 all        # 5 pages per source
+python scraper/main.py 5 kalibrr    # one source: jobstreet | dealls | kalibrr
+```
+
+Or from GitHub: **Actions → Scrape Jobs → Run workflow** (also runs daily at 08:00 WIB).
+
+## Stack
+
+Next.js 16 (App Router) · React 19 · Tailwind CSS v4 · shadcn/ui (@base-ui) · TanStack Table · Python stdlib scraper
+
+See [ABOUT.md](./ABOUT.md) for architecture details, data model, and conventions.

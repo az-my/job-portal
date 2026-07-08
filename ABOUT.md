@@ -2,7 +2,7 @@
 
 **Job Aggregator** — a local-first job listing aggregator that scrapes Indonesian job boards (JobStreet, Dealls, and Kalibrr), normalizes the results into a single schema, and displays them in a high-density, searchable data table. Built with Next.js 16 (App Router), React 19, Tailwind CSS v4, and shadcn/ui.
 
-> Note: the project began as a full job *portal* (candidates, employers, admins, applications) — traces of that remain in the README, the `User`/`Application` types, and `scripts/scrape.py`. It has since been refactored into a **pure aggregator**: scrape → normalize → store → browse.
+> Note: the project began as a full job *portal* (candidates, employers, admins, applications) and was refactored into a **pure aggregator**: scrape → normalize → store → browse.
 
 ## How It Works
 
@@ -29,7 +29,7 @@ back to the repo. The frontend never triggers scraping — it only reads the dat
 ```
 
 1. **Collect** — three source adapters fetch raw listings:
-   - **JobStreet** (`scraper/jobstreet.py`): POSTs to the `id.jobstreet.com/graphql` endpoint using the `JobSearchV6` / `JobCountsV6` queries, with browser-mimicking headers and hardcoded session/sol IDs (`scraper/config.py`).
+   - **JobStreet** (`scraper/jobstreet.py`): POSTs to the `id.jobstreet.com/graphql` endpoint using the `JobSearchV6` query with `sortMode=ListedDate` (newest first), browser-mimicking headers, and per-run generated session UUIDs (`scraper/config.py`).
    - **Dealls** (`scraper/dealls.py`): GETs the public `api.sejutacita.id/v1/explore-job/job` REST endpoint, paginated 18 per page.
    - **Kalibrr** (`scraper/kalibrr.py`): GETs `www.kalibrr.id/kjs/job_board/search` with `limit`/`offset` pagination and `sort=Freshness`. Deliberately avoids the `_next/data/<buildId>/` routes — the build id rotates on every Kalibrr deploy and those pages ignore pagination.
 2. **Transform** — `normalize.py` maps both raw shapes into one `Job` dict (title, company, location, type, salary formatted as `Rp…jt`, source, sourceId, url, plus the full raw JSON payload for the raw-response viewer).
@@ -57,8 +57,7 @@ back to the repo. The frontend never triggers scraping — it only reads the dat
 
 Defined in `src/lib/db.ts` (the Python scraper produces the same shape):
 
-- **`Job`** — `id`, `title`, `company`, `location`, `type` (`full-time` | `part-time` | `remote` | `contract`), `description`, `salary`, `source` (`jobstreet` | `dealls` | `kalibrr`), `sourceId` (dedup key), `url`, `logoUrl`, `requirements`, `raw` (stringified original API response), `createdAt`.
-- **`User`** / **`Application`** — legacy from the portal phase; still in the schema and `db.json` but unused by the current UI.
+- **`Job`** — `id`, `title`, `company`, `location`, `type` (`full-time` | `part-time` | `remote` | `contract`), `description`, `salary`, `source` (`jobstreet` | `dealls` | `kalibrr`), `sourceId` (dedup key, scoped per source), `url`, `logoUrl`, `requirements`, `raw` (stringified original API response), `createdAt` (real posting date from each source).
 
 ## Running It
 
@@ -90,7 +89,5 @@ Scraping (CI): GitHub → Actions → "Scrape Jobs" → Run workflow (pick sourc
 
 ## Known Rough Edges
 
-- `README.md` still describes the old portal (persona switching, applications, pre-seeded admin) and no longer matches the code.
-- JobStreet normalization leaves `location` empty and hardcodes `type: 'full-time'` (the GraphQL query doesn't fetch those fields); JobStreet items get `createdAt: now`, so the 7-day cleanup measures *scrape* age, not posting age.
-- JobStreet session/sol IDs are hardcoded in `scraper/config.py` and may expire.
-- `db.json` still contains legacy `users`/`applications` arrays that nothing reads.
+- All three sources are scraped sequentially; a slow source delays the others (fine at 3 sources).
+- JobStreet's GraphQL schema is unofficial and could change without notice; same for the Dealls and Kalibrr endpoints.
