@@ -42,6 +42,8 @@ back to the repo. The frontend never triggers scraping — it only reads the dat
 | Path | Purpose |
 |---|---|
 | `src/app/page.tsx` | Entry page; reads `db.json` server-side (`force-dynamic`) |
+| `src/app/sources/page.tsx` | `/sources` — internal endpoint-intel page: per-portal findings, limits, field maps, live stats |
+| `src/lib/source-intel.ts` | The endpoint field notes rendered by `/sources` — update when an API changes |
 | `src/lib/db.ts` | Tiny JSON-file "database" layer over `data/db.json` |
 | `src/components/Dashboard.tsx` | Main client UI: header, jobs table, detail dialog (read-only) |
 | `src/components/data-table.tsx` | Generic TanStack table wrapper (search, sort, pagination) |

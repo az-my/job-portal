@@ -12,7 +12,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Briefcase, ExternalLink, Eye, FileJson, Columns2 } from "lucide-react";
+import Link from "next/link";
+import { Briefcase, Database, ExternalLink, Eye, FileJson, Columns2 } from "lucide-react";
 
 interface DashboardProps {
   initialJobs: Job[];
@@ -170,6 +171,12 @@ export default function Dashboard({ initialJobs }: DashboardProps) {
           <div className="flex items-center gap-4 text-muted-foreground">
             <span>{jobs.length} jobs</span>
             {lastUpdated && <span>updated {lastUpdated}</span>}
+            <Link
+              href="/sources"
+              className="inline-flex items-center gap-1.5 border border-border px-3 py-1.5 hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <Database className="size-4" /> Source Intel
+            </Link>
           </div>
         </div>
       </header>
