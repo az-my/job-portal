@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { getDb, type Job } from "@/lib/db";
 import { SOURCE_INTEL, PIPELINE_NOTES } from "@/lib/source-intel";
-import { ArrowLeft, Database, ExternalLink } from "lucide-react";
+import { AdminNav } from "@/components/AdminNav";
+import { Database, ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -82,12 +82,7 @@ export default function SourcesPage() {
           <div className="flex items-center gap-4 text-muted-foreground">
             <span>{SOURCE_INTEL.length} endpoints</span>
             <span>{total} jobs in DB</span>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 border border-border px-3 py-1.5 hover:bg-muted transition-colors"
-            >
-              <ArrowLeft className="size-4" /> Dashboard
-            </Link>
+            <AdminNav />
           </div>
         </div>
         <p className="mt-2 text-muted-foreground">

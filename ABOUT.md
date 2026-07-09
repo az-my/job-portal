@@ -43,7 +43,12 @@ back to the repo. The frontend never triggers scraping — it only reads the dat
 |---|---|
 | `src/app/page.tsx` | Entry page; reads `db.json` server-side (`force-dynamic`) |
 | `src/app/sources/page.tsx` | `/sources` — internal endpoint-intel page: per-portal findings, limits, field maps, live stats |
+| `src/app/dataset/` | `/dataset` — dataset stats + CSV/JSON export (`/dataset/export?format=csv\|json`) |
+| `src/app/wiki/page.tsx` | `/wiki` — architecture, runbook, troubleshooting, decisions log |
+| `src/app/backlog/page.tsx` | `/backlog` — renders `BACKLOG.md` (the canonical backlog) grouped by status |
+| `src/components/AdminNav.tsx` | Shared flat-page nav across all admin pages |
 | `src/lib/source-intel.ts` | The endpoint field notes rendered by `/sources` — update when an API changes |
+| `BACKLOG.md` | Canonical project backlog — edit this file, `/backlog` renders it |
 | `src/lib/db.ts` | Tiny JSON-file "database" layer over `data/db.json` |
 | `src/components/Dashboard.tsx` | Main client UI: header, jobs table, detail dialog (read-only) |
 | `src/components/data-table.tsx` | Generic TanStack table wrapper (search, sort, pagination) |
