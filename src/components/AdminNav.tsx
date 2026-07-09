@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, Database, FileSpreadsheet, BookOpen, ListTodo } from "lucide-react";
+import { Briefcase, Database, FileSpreadsheet, BookOpen, ListTodo, Sparkles } from "lucide-react";
 
 const PAGES = [
   { href: "/", label: "Jobs", icon: Briefcase },
+  { href: "/query", label: "Query", icon: Sparkles },
   { href: "/sources", label: "Sources", icon: Database },
   { href: "/dataset", label: "Dataset", icon: FileSpreadsheet },
   { href: "/wiki", label: "Wiki", icon: BookOpen },

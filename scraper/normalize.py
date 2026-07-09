@@ -34,6 +34,37 @@ def _format_salary(start, end):
     return ""
 
 
+_SALARY_LABEL_RE = re.compile(r"(?i)rp\s*([\d.,]+)\s*(jt|juta)?")
+
+
+def _parse_salary_label(label):
+    """Pull numeric IDR bounds out of a display label like 'Rp 5.000.000 – Rp 8.000.000'."""
+    if not label:
+        return None, None
+    values = []
+    for m in _SALARY_LABEL_RE.finditer(label):
+        try:
+            v = int(m.group(1).replace(".", "").replace(",", ""))
+        except ValueError:
+            continue
+        if m.group(2):
+            v *= 1_000_000
+        if v >= 100_000:  # ignore stray small numbers
+            values.append(v)
+    if not values:
+        return None, None
+    if len(values) == 1:
+        return values[0], None
+    return min(values), max(values)
+
+
+def _set_salary_bounds(job, smin, smax):
+    if smin:
+        job["salaryMin"] = int(smin)
+    if smax:
+        job["salaryMax"] = int(smax)
+
+
 EMPLOYMENT_TYPE_MAP = {
     "fullTime": "full-time",
     "partTime": "part-time",
@@ -91,6 +122,7 @@ def normalize_jobstreet(item):
     }
     if classification:
         job["requirements"] = classification
+    _set_salary_bounds(job, *_parse_salary_label(item.get("salaryLabel")))
     return job
 
 
@@ -133,6 +165,7 @@ def normalize_dealls(doc):
     }
     if skill_names:
         job["requirements"] = skill_names
+    _set_salary_bounds(job, salary_range.get("start"), salary_range.get("end"))
     return job
 
 
@@ -193,6 +226,7 @@ def normalize_kalibrr(job):
     }
     if qualifications:
         normalized["requirements"] = qualifications
+    _set_salary_bounds(normalized, base, maximum)
     return normalized
 
 
@@ -224,6 +258,7 @@ def normalize_glints(job):
         job_type = GLINTS_TYPE_MAP.get(job.get("type") or "", "full-time")
 
     salary = ""
+    salary_min = salary_max = None
     for s in job.get("salaries") or []:
         min_amount = s.get("minAmount")
         max_amount = s.get("maxAmount")
@@ -232,6 +267,7 @@ def normalize_glints(job):
         if (s.get("CurrencyCode") or "IDR") == "IDR":
             salary = _format_salary(int(min_amount) if min_amount else None,
                                     int(max_amount) if max_amount else None)
+            salary_min, salary_max = min_amount, max_amount
         else:
             salary = f"{min_amount or ''}-{max_amount or ''} {s.get('CurrencyCode')}".strip("-")
         break
@@ -269,6 +305,7 @@ def normalize_glints(job):
     }
     if skill_names:
         normalized["requirements"] = skill_names
+    _set_salary_bounds(normalized, salary_min, salary_max)
     return normalized
 
 

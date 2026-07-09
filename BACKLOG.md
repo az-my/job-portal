@@ -5,8 +5,7 @@ Format: `## Now / Next / Later / Done` sections with `- item` lines; keep one it
 
 ## Now
 
-- Build /query page — natural-language search builder powered by Gemini (blocked: needs GEMINI_API_KEY in .env.local)
-- Store numeric salaryMin/salaryMax at normalize time in the scraper (prereq for salary filtering in /query)
+- (empty — pick from Next)
 
 ## Next
 
@@ -33,3 +32,5 @@ Format: `## Now / Next / Later / Done` sections with `- item` lines; keep one it
 - /dataset page: stats, CSV/JSON export, schema reference
 - /wiki page: architecture, runbook, decisions log
 - /backlog page rendering this file
+- /query page: NL search via Gemini (gemini-2.5-flash, structured output, keyword fallback); GEMINI_API_KEY in .env.local
+- Numeric salaryMin/salaryMax stored at normalize time for all four sources (JobStreet parses the display label)

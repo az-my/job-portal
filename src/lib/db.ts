@@ -10,6 +10,8 @@ export interface Job {
   type: 'full-time' | 'part-time' | 'remote' | 'contract';
   description: string;
   salary: string;
+  salaryMin?: number;
+  salaryMax?: number;
   createdAt: string;
   requirements?: string;
   source?: string;
