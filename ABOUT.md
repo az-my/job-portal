@@ -43,6 +43,7 @@ back to the repo. The frontend never triggers scraping — it only reads the dat
 |---|---|
 | `src/app/page.tsx` | Entry page; reads `db.json` server-side (`force-dynamic`) |
 | `src/app/sources/page.tsx` | `/sources` — internal endpoint-intel page: per-portal findings, limits, field maps, live stats |
+| `src/app/query/` | `/query` — NL search: Gemini translates the request to a structured filter (needs `GEMINI_API_KEY` in `.env.local`) |
 | `src/app/dataset/` | `/dataset` — dataset stats + CSV/JSON export (`/dataset/export?format=csv\|json`) |
 | `src/app/wiki/page.tsx` | `/wiki` — architecture, runbook, troubleshooting, decisions log |
 | `src/app/backlog/page.tsx` | `/backlog` — renders `BACKLOG.md` (the canonical backlog) grouped by status |
