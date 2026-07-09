@@ -1,4 +1,4 @@
-import { getJobs, SUPABASE_URL, SUPABASE_ANON_KEY, type Job } from "@/lib/db";
+import { getJobs, SUPABASE_URL, SUPABASE_REST_KEY, type Job } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -74,8 +74,8 @@ async function runSql(sql: string): Promise<Record<string, unknown>[]> {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/run_job_query`, {
     method: "POST",
     headers: {
-      apikey: SUPABASE_ANON_KEY!,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      apikey: SUPABASE_REST_KEY!,
+      Authorization: `Bearer ${SUPABASE_REST_KEY}`,
       "content-type": "application/json",
     },
     body: JSON.stringify({ query_text: sql }),
@@ -108,7 +108,7 @@ export async function GET(request: Request) {
   if (!q) return Response.json({ error: "Missing ?q=" }, { status: 400 });
 
   const geminiKey = process.env.GEMINI_API_KEY;
-  const supabaseReady = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+  const supabaseReady = Boolean(SUPABASE_URL && SUPABASE_REST_KEY);
 
   if (geminiKey && supabaseReady) {
     try {

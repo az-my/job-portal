@@ -27,8 +27,8 @@ export interface DbSchema {
 const PROJECT_ROOT = process.cwd();
 const DB_FILE = path.join(PROJECT_ROOT, 'data', 'db.json');
 
-export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+export const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+export const SUPABASE_REST_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 interface JobRow {
   id: number;
@@ -76,12 +76,12 @@ function rowToJob(row: JobRow): Job {
  * rows — fine while the fresh window sits around 600.
  */
 export async function getJobs(): Promise<Job[]> {
-  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+  if (SUPABASE_URL && SUPABASE_REST_KEY) {
     try {
       const res = await fetch(
         `${SUPABASE_URL}/rest/v1/jobs_fresh?select=*&order=posted_at.desc&limit=1000`,
         {
-          headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+          headers: { apikey: SUPABASE_REST_KEY, Authorization: `Bearer ${SUPABASE_REST_KEY}` },
           cache: 'no-store',
         }
       );
