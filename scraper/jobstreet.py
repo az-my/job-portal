@@ -80,13 +80,25 @@ def collect_page(page=1, page_size=22):
 
 def collect_jobs(max_pages=5, page_size=22):
     first = collect_page(1, page_size)
-    items = list(first.get("data") or [])
-    if not items:
+    if not first.get("data"):
         return []
 
+    items = []
+    seen_ids = set()
+
+    def add(batch):
+        # pages shift as new jobs are posted mid-scrape; drop re-served ids
+        for item in batch or []:
+            item_id = item.get("id")
+            if item_id is None or item_id in seen_ids:
+                continue
+            seen_ids.add(item_id)
+            items.append(item)
+
+    add(first["data"])
     total_pages = min(max_pages, math.ceil(first["totalCount"] / page_size))
     for page in range(2, total_pages + 1):
         result = collect_page(page, page_size)
-        items.extend(result.get("data") or [])
+        add(result.get("data"))
 
     return items

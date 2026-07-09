@@ -84,7 +84,13 @@ def upsert_jobs(jobs):
         return None
 
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
-    rows = [_to_row(j, now_iso) for j in jobs if j.get("sourceId")]
+    # a batch upsert must not contain the same (source, source_id) twice
+    # (pages can shift mid-scrape and re-serve a job); keep the last seen
+    by_key = {}
+    for j in jobs:
+        if j.get("sourceId"):
+            by_key[(j["source"], j["sourceId"])] = j
+    rows = [_to_row(j, now_iso) for j in by_key.values()]
 
     for i in range(0, len(rows), BATCH_SIZE):
         _request(
