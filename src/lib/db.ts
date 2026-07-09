@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
 export interface Job {
   id: string;
@@ -25,9 +24,7 @@ export interface DbSchema {
   jobs: Job[];
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
+const PROJECT_ROOT = process.cwd();
 const DB_FILE = path.join(PROJECT_ROOT, 'data', 'db.json');
 
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
