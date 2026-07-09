@@ -6,19 +6,105 @@ import { Search, ExternalLink, Sparkles, TriangleAlert } from "lucide-react";
 
 interface QueryResponse {
   q: string;
-  usedLLM: boolean;
-  llmError: string | null;
-  filter: Record<string, unknown>;
+  mode: "sql" | "fallback";
+  sql?: string;
+  llmError?: string;
   count: number;
-  jobs: Job[];
+  rows?: Record<string, unknown>[];
+  jobs?: Job[];
 }
 
 const EXAMPLES = [
   "remote frontend jobs above 5jt posted this week",
+  "average salary per source",
+  "top 10 companies by number of open jobs",
   "gaji di atas 8 juta di jakarta",
-  "internship from glints posted in the last 3 days",
-  "data engineer kalibrr atau dealls",
+  "how many jobs per day per source",
 ];
+
+function cellText(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
+function DynamicTable({ rows }: { rows: Record<string, unknown>[] }) {
+  if (rows.length === 0) {
+    return <p className="px-3 py-4 text-muted-foreground">No rows returned.</p>;
+  }
+  const columns = Object.keys(rows[0]);
+  return (
+    <table className="w-full text-left">
+      <thead>
+        <tr className="border-b border-border bg-muted/30">
+          {columns.map((col) => (
+            <th key={col} className="px-3 py-1.5 font-mono text-xs uppercase tracking-wider text-muted-foreground">
+              {col}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, i) => (
+          <tr key={i} className="border-b border-border last:border-b-0 align-top">
+            {columns.map((col) => {
+              const value = cellText(row[col]);
+              const isUrl = col === "url" && value.startsWith("http");
+              return (
+                <td key={col} className="px-3 py-1.5 max-w-96 truncate" title={value}>
+                  {isUrl ? (
+                    <a href={value} target="_blank" rel="noopener noreferrer"
+                       className="text-muted-foreground hover:text-foreground">
+                      <ExternalLink className="size-4" />
+                    </a>
+                  ) : (
+                    value
+                  )}
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function JobsTable({ jobs }: { jobs: Job[] }) {
+  if (jobs.length === 0) {
+    return <p className="px-3 py-4 text-muted-foreground">No jobs match.</p>;
+  }
+  return (
+    <table className="w-full text-left">
+      <tbody>
+        {jobs.map((job) => (
+          <tr key={job.id} className="border-b border-border last:border-b-0 align-top">
+            <td className="px-3 py-2">
+              <div className="font-medium">{job.title}</div>
+              <div className="text-muted-foreground text-xs">
+                {job.company}
+                {job.location ? ` · ${job.location}` : ""} · {job.type}
+                {job.salary ? ` · ${job.salary}` : ""}
+              </div>
+            </td>
+            <td className="px-3 py-2 whitespace-nowrap text-xs text-muted-foreground">
+              <span className="uppercase tracking-wider">{job.source}</span>
+              <span> · {new Date(job.createdAt).toLocaleDateString("en-CA")}</span>
+            </td>
+            <td className="px-3 py-2">
+              {job.url && (
+                <a href={job.url} target="_blank" rel="noopener noreferrer"
+                   className="text-muted-foreground hover:text-foreground">
+                  <ExternalLink className="size-4" />
+                </a>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
 
 export function QueryBuilder() {
   const [q, setQ] = useState("");
@@ -54,7 +140,7 @@ export function QueryBuilder() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Describe the jobs you want, in English or Indonesian…"
+          placeholder="Ask anything about the jobs data, in English or Indonesian…"
           className="flex-1 border border-border bg-transparent px-3 py-2 outline-none focus:bg-muted/30"
         />
         <button
@@ -88,62 +174,31 @@ export function QueryBuilder() {
       )}
 
       {res && (
-        <>
-          <div className="grid gap-4 md:grid-cols-[minmax(280px,1fr)_2fr] mb-4">
-            <section className="border border-border">
-              <h2 className="border-b border-border px-3 py-2 uppercase tracking-widest text-xs font-bold bg-muted/30 flex items-center gap-1.5">
-                {res.usedLLM ? <Sparkles className="size-3.5" /> : <TriangleAlert className="size-3.5" />}
-                {res.usedLLM ? "Gemini filter" : "Fallback keyword filter"}
-              </h2>
-              <pre className="px-3 py-2 font-mono text-xs whitespace-pre-wrap break-all">
-                {JSON.stringify(res.filter, null, 2)}
-              </pre>
-              {res.llmError && (
-                <p className="px-3 pb-2 text-xs text-destructive">{res.llmError}</p>
-              )}
-            </section>
+        <div className="space-y-4">
+          <section className="border border-border">
+            <h2 className="border-b border-border px-3 py-2 uppercase tracking-widest text-xs font-bold bg-muted/30 flex items-center gap-1.5">
+              {res.mode === "sql" ? <Sparkles className="size-3.5" /> : <TriangleAlert className="size-3.5" />}
+              {res.mode === "sql" ? "Generated SQL (read-only, 4s timeout)" : "Fallback keyword search"}
+            </h2>
+            {res.sql && (
+              <pre className="px-3 py-2 font-mono text-xs whitespace-pre-wrap break-all">{res.sql}</pre>
+            )}
+            {res.llmError && <p className="px-3 py-2 text-xs text-destructive">{res.llmError}</p>}
+          </section>
 
-            <section className="border border-border overflow-auto max-h-[60vh]">
-              <h2 className="border-b border-border px-3 py-2 uppercase tracking-widest text-xs font-bold bg-muted/30 sticky top-0">
-                {res.count} match{res.count === 1 ? "" : "es"}
-                {res.count > res.jobs.length ? ` (showing ${res.jobs.length})` : ""}
-              </h2>
-              <table className="w-full text-left">
-                <tbody>
-                  {res.jobs.map((job) => (
-                    <tr key={job.id} className="border-b border-border last:border-b-0 align-top">
-                      <td className="px-3 py-2">
-                        <div className="font-medium">{job.title}</div>
-                        <div className="text-muted-foreground text-xs">
-                          {job.company}
-                          {job.location ? ` · ${job.location}` : ""} · {job.type}
-                          {job.salary ? ` · ${job.salary}` : ""}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-muted-foreground">
-                        <span className="uppercase tracking-wider">{job.source}</span>
-                        <span> · {new Date(job.createdAt).toLocaleDateString("en-CA")}</span>
-                      </td>
-                      <td className="px-3 py-2">
-                        {job.url && (
-                          <a href={job.url} target="_blank" rel="noopener noreferrer"
-                             className="text-muted-foreground hover:text-foreground">
-                            <ExternalLink className="size-4" />
-                          </a>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                  {res.jobs.length === 0 && (
-                    <tr>
-                      <td className="px-3 py-4 text-muted-foreground">No jobs match this filter.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </section>
-          </div>
-        </>
+          <section className="border border-border overflow-auto max-h-[65vh]">
+            <h2 className="border-b border-border px-3 py-2 uppercase tracking-widest text-xs font-bold bg-muted/30 sticky top-0">
+              {res.count} row{res.count === 1 ? "" : "s"}
+            </h2>
+            <div className="overflow-x-auto">
+              {res.mode === "sql" ? (
+                <DynamicTable rows={res.rows ?? []} />
+              ) : (
+                <JobsTable jobs={res.jobs ?? []} />
+              )}
+            </div>
+          </section>
+        </div>
       )}
     </div>
   );

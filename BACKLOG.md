@@ -3,12 +3,10 @@
 Canonical project backlog. Edit this file directly — `/backlog` in the app renders it.
 Format: `## Now / Next / Later / Done` sections with `- item` lines; keep one item per line.
 
-## Now — Supabase migration (in order)
+## Now
 
-- BLOCKED on user: add SUPABASE_SECRET_KEY (sb_secret_… from dashboard → project settings → API keys) to .env.local and GitHub secrets so scraper writes flow (SUPABASE_URL secret already set)
-- Frontend reads from Supabase (jobs page, /sources stats, /dataset) instead of db.json
-- /query v2 — Gemini text-to-SQL: schema in prompt, show generated SQL, execute via READ-ONLY role + single-SELECT validation + statement_timeout (never execute LLM SQL with a privileged key)
-- Retire db.json dual-write once Supabase is stable
+- Retire db.json dual-write once Supabase has proven stable for a few daily runs (drop storage.py merge, workflow commit step, and the getJobs db.json fallback)
+- Update /sources and /wiki content for the Supabase architecture (they still describe db.json as primary)
 
 ## Next
 
@@ -39,3 +37,5 @@ Format: `## Now / Next / Later / Done` sections with `- item` lines; keep one it
 - Numeric salaryMin/salaryMax stored at normalize time for all four sources (JobStreet parses the display label)
 - Supabase project "job-portal" (wlxntcsxadknyhyixegf, ap-southeast-1): jobs table, UNIQUE (source, source_id), jobs_fresh view, RLS public-read, is_stale retention (no deletes — history kept)
 - Scraper dual-write via PostgREST upsert (stdlib urllib) + mark_stale; graceful skip when unconfigured; 509 jobs backfilled
+- Frontend reads jobs_fresh from Supabase (db.json fallback kept); /dataset exports come from Supabase too
+- /query v2 text-to-SQL: Gemini writes a SELECT, executed by run_job_query() — read-only role owner, single-SELECT validation, 4s statement_timeout; attacks verified blocked (DELETE, chaining, auth.users read)

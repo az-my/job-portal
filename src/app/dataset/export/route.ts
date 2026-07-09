@@ -1,4 +1,4 @@
-import { getDb, type Job } from "@/lib/db";
+import { getJobs, type Job } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -23,12 +23,12 @@ function toCsv(jobs: Job[]): string {
 
 export async function GET(request: Request) {
   const format = new URL(request.url).searchParams.get("format") ?? "json";
-  const db = getDb();
+  const jobs = await getJobs();
   const stamp = new Date().toISOString().slice(0, 10);
 
   if (format === "csv") {
     // raw payload column excluded: multi-KB per row and already available in the JSON export
-    return new Response(toCsv(db.jobs), {
+    return new Response(toCsv(jobs), {
       headers: {
         "content-type": "text/csv; charset=utf-8",
         "content-disposition": `attachment; filename="jobs-${stamp}.csv"`,
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     });
   }
 
-  return new Response(JSON.stringify(db, null, 2), {
+  return new Response(JSON.stringify({ jobs }, null, 2), {
     headers: {
       "content-type": "application/json; charset=utf-8",
       "content-disposition": `attachment; filename="jobs-${stamp}.json"`,

@@ -19,9 +19,9 @@ export default function QueryPage() {
           <AdminNav />
         </div>
         <p className="mt-2 text-muted-foreground">
-          Type what you want in plain language — Gemini (gemini-2.5-flash) translates it into the structured
-          filter shown beside the results, then the filter runs against the local DB. One LLM call per query;
-          falls back to plain keyword matching if the key is missing or the call fails.
+          Ask in plain language — Gemini (gemini-2.5-flash) writes a SQL SELECT, shown above the results, and
+          it runs against Supabase under a read-only role with a 4s timeout. Listings and aggregations both
+          work. One LLM call per query; falls back to keyword matching if translation fails.
         </p>
       </header>
 

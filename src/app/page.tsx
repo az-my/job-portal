@@ -1,10 +1,10 @@
-import { getDb } from "@/lib/db";
+import { getJobs } from "@/lib/db";
 import Dashboard from "@/components/Dashboard";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const db = getDb();
+  const jobs = await getJobs();
 
-  return <Dashboard initialJobs={db.jobs} />;
+  return <Dashboard initialJobs={jobs} />;
 }

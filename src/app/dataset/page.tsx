@@ -1,4 +1,4 @@
-import { getDb, type Job } from "@/lib/db";
+import { getJobs } from "@/lib/db";
 import { AdminNav } from "@/components/AdminNav";
 import { FileSpreadsheet, Download } from "lucide-react";
 
@@ -45,9 +45,8 @@ function Bar({ label, count, max, sub }: { label: string; count: number; max: nu
   );
 }
 
-export default function DatasetPage() {
-  const db = getDb();
-  const jobs = db.jobs;
+export default async function DatasetPage() {
+  const jobs = await getJobs();
   const total = jobs.length;
 
   const bySource: Record<string, number> = {};

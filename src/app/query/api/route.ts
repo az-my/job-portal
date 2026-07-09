@@ -1,54 +1,51 @@
-import { getDb, type Job } from "@/lib/db";
+import { getJobs, SUPABASE_URL, SUPABASE_ANON_KEY, type Job } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
-export interface QueryFilter {
-  keywords: string[];
-  sources: string[];
-  types: string[];
-  salaryMinIDR: number | null;
-  maxAgeDays: number | null;
-  location: string | null;
-}
+const SQL_PROMPT = `You translate job-search questions (English or Indonesian) into ONE PostgreSQL SELECT statement.
+
+Schema — table public.jobs and view public.jobs_fresh (same columns; jobs_fresh = active listings posted in the last 7 days; the jobs table keeps the full history/archive):
+  source text          -- 'jobstreet' | 'dealls' | 'kalibrr' | 'glints'
+  source_id text
+  title text
+  company text
+  location text        -- e.g. 'Jakarta, Indonesia' / 'Tangerang, Banten'
+  type text            -- 'full-time' | 'part-time' | 'remote' | 'contract'
+  description text
+  salary text          -- display string, may be empty
+  salary_min bigint    -- monthly IDR, null when unknown
+  salary_max bigint    -- monthly IDR, null when unknown
+  requirements text    -- skills / qualifications, null when unknown
+  url text
+  posted_at timestamptz -- real posting date
+  is_stale boolean
+
+Rules:
+- One SELECT only. Never modify data. No semicolons.
+- Query jobs_fresh by default; use jobs only when the user asks about history/archive/trends over time.
+- Text matching: ILIKE '%term%' against title/description/requirements/company. Salary floors: coalesce(salary_max, salary_min) >= X and salary_min is not null.
+- "5jt" / "5 juta" = 5000000 IDR (monthly).
+- Row listings: select title, company, location, type, salary, source, url, posted_at — order by posted_at desc, LIMIT 100. Aggregations: sensible columns, no limit needed.
+
+Return JSON: {"sql": "..."}
+
+Question: `;
 
 const RESPONSE_SCHEMA = {
   type: "OBJECT",
-  properties: {
-    keywords: { type: "ARRAY", items: { type: "STRING" } },
-    sources: {
-      type: "ARRAY",
-      items: { type: "STRING", enum: ["jobstreet", "dealls", "kalibrr", "glints"] },
-    },
-    types: {
-      type: "ARRAY",
-      items: { type: "STRING", enum: ["full-time", "part-time", "remote", "contract"] },
-    },
-    salaryMinIDR: { type: "NUMBER", nullable: true },
-    maxAgeDays: { type: "NUMBER", nullable: true },
-    location: { type: "STRING", nullable: true },
-  },
-  required: ["keywords", "sources", "types"],
+  properties: { sql: { type: "STRING" } },
+  required: ["sql"],
 };
 
-const PROMPT = `Translate a job-search request (English or Indonesian) into a filter for a job database.
-- keywords: role/skill/company search terms only — never salary, date, location, source, or employment-type words. Lowercase. Empty array if the request has no term worth text-matching.
-- sources: only when a specific portal is named (jobstreet, dealls, kalibrr, glints), else [].
-- types: employment types explicitly requested ("remote", "magang"/"internship" → contract, "part time", …), else [].
-- salaryMinIDR: minimum monthly salary in IDR ("5jt" = 5000000, "gaji di atas 10 juta" = 10000000), else null.
-- maxAgeDays: recency in days ("today" = 1, "this week" = 7, "3 hari terakhir" = 3), else null.
-- location: city/region name if mentioned, else null.
-
-Request: `;
-
-async function translateWithGemini(q: string, key: string): Promise<QueryFilter> {
+async function generateSql(q: string, key: string): Promise<string> {
   const res = await fetch(GEMINI_URL, {
     method: "POST",
     headers: { "content-type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: PROMPT + q }] }],
+      contents: [{ parts: [{ text: SQL_PROMPT + q }] }],
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: RESPONSE_SCHEMA,
@@ -56,94 +53,83 @@ async function translateWithGemini(q: string, key: string): Promise<QueryFilter>
       },
     }),
   });
-
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Gemini HTTP ${res.status}: ${body.slice(0, 200)}`);
-  }
-
+  if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const payload = await res.json();
   const text = payload?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error(`Gemini returned no candidates: ${JSON.stringify(payload).slice(0, 200)}`);
-
-  const parsed = JSON.parse(text);
-  return {
-    keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
-    sources: Array.isArray(parsed.sources) ? parsed.sources : [],
-    types: Array.isArray(parsed.types) ? parsed.types : [],
-    salaryMinIDR: typeof parsed.salaryMinIDR === "number" ? parsed.salaryMinIDR : null,
-    maxAgeDays: typeof parsed.maxAgeDays === "number" ? parsed.maxAgeDays : null,
-    location: typeof parsed.location === "string" && parsed.location ? parsed.location : null,
-  };
+  if (!text) throw new Error("Gemini returned no candidates");
+  const sql = String(JSON.parse(text).sql ?? "").trim();
+  if (!sql) throw new Error("Gemini returned empty SQL");
+  return sql;
 }
 
-function fallbackFilter(q: string): QueryFilter {
-  return {
-    keywords: q.toLowerCase().split(/\s+/).filter(Boolean),
-    sources: [],
-    types: [],
-    salaryMinIDR: null,
-    maxAgeDays: null,
-    location: null,
-  };
+/** App-side validation; the run_job_query function re-checks and runs read-only with a 4s timeout. */
+function validateSql(sql: string): string {
+  const cleaned = sql.replace(/;\s*$/, "").trim();
+  if (!/^select\b/i.test(cleaned)) throw new Error("Only SELECT statements are allowed");
+  if (cleaned.includes(";")) throw new Error("Only a single statement is allowed");
+  return cleaned;
 }
 
-function applyFilter(jobs: Job[], filter: QueryFilter): Job[] {
-  const cutoff = filter.maxAgeDays
-    ? Date.now() - filter.maxAgeDays * 24 * 60 * 60 * 1000
-    : null;
-  const location = filter.location?.toLowerCase() ?? null;
-  const keywords = filter.keywords.map((k) => k.toLowerCase());
+async function runSql(sql: string): Promise<Record<string, unknown>[]> {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/run_job_query`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_ANON_KEY!,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ query_text: sql }),
+  });
+  const body = await res.text();
+  if (!res.ok) {
+    let message = body.slice(0, 300);
+    try { message = JSON.parse(body).message ?? message; } catch {}
+    throw new Error(`Query failed: ${message}`);
+  }
+  return JSON.parse(body);
+}
 
+function keywordFallback(q: string, jobs: Job[]): Job[] {
+  const keywords = q.toLowerCase().split(/\s+/).filter(Boolean);
   const scored: [number, Job][] = [];
   for (const job of jobs) {
-    if (filter.sources.length && !filter.sources.includes(job.source ?? "")) continue;
-    if (filter.types.length && !filter.types.includes(job.type)) continue;
-    if (cutoff && new Date(job.createdAt).getTime() < cutoff) continue;
-    if (location && !job.location.toLowerCase().includes(location)) continue;
-    if (filter.salaryMinIDR) {
-      const pay = job.salaryMax ?? job.salaryMin;
-      if (!pay || pay < filter.salaryMinIDR) continue;
-    }
-
+    const haystack =
+      `${job.title} ${job.company} ${job.description} ${job.requirements ?? ""}`.toLowerCase();
     let score = 0;
-    if (keywords.length) {
-      const haystack =
-        `${job.title} ${job.company} ${job.description} ${job.requirements ?? ""}`.toLowerCase();
-      for (const kw of keywords) if (haystack.includes(kw)) score++;
-      if (score === 0) continue;
-    }
-    scored.push([score, job]);
+    for (const kw of keywords) if (haystack.includes(kw)) score++;
+    if (score > 0) scored.push([score, job]);
   }
-
   scored.sort((a, b) => b[0] - a[0] || b[1].createdAt.localeCompare(a[1].createdAt));
   return scored.map(([, job]) => job);
 }
 
 export async function GET(request: Request) {
   const q = new URL(request.url).searchParams.get("q")?.trim();
-  if (!q) {
-    return Response.json({ error: "Missing ?q=" }, { status: 400 });
-  }
+  if (!q) return Response.json({ error: "Missing ?q=" }, { status: 400 });
 
-  const key = process.env.GEMINI_API_KEY;
-  let filter: QueryFilter;
-  let usedLLM = false;
-  let llmError: string | null = null;
+  const geminiKey = process.env.GEMINI_API_KEY;
+  const supabaseReady = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
-  if (key) {
+  if (geminiKey && supabaseReady) {
     try {
-      filter = await translateWithGemini(q, key);
-      usedLLM = true;
+      const sql = validateSql(await generateSql(q, geminiKey));
+      const rows = await runSql(sql);
+      return Response.json({ q, mode: "sql", sql, count: rows.length, rows: rows.slice(0, 200) });
     } catch (err) {
-      llmError = err instanceof Error ? err.message : String(err);
-      filter = fallbackFilter(q);
+      const message = err instanceof Error ? err.message : String(err);
+      const jobs = keywordFallback(q, await getJobs());
+      return Response.json({
+        q, mode: "fallback",
+        llmError: `Text-to-SQL failed (${message}) — plain keyword matching instead.`,
+        count: jobs.length, jobs: jobs.slice(0, 100),
+      });
     }
-  } else {
-    llmError = "GEMINI_API_KEY not set — using plain keyword matching.";
-    filter = fallbackFilter(q);
   }
 
-  const jobs = applyFilter(getDb().jobs, filter);
-  return Response.json({ q, usedLLM, llmError, filter, count: jobs.length, jobs: jobs.slice(0, 100) });
+  const jobs = keywordFallback(q, await getJobs());
+  return Response.json({
+    q, mode: "fallback",
+    llmError: geminiKey ? "Supabase not configured." : "GEMINI_API_KEY not set.",
+    count: jobs.length, jobs: jobs.slice(0, 100),
+  });
 }

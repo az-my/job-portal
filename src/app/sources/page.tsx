@@ -1,4 +1,4 @@
-import { getDb, type Job } from "@/lib/db";
+import { getJobs, type Job } from "@/lib/db";
 import { SOURCE_INTEL, PIPELINE_NOTES } from "@/lib/source-intel";
 import { AdminNav } from "@/components/AdminNav";
 import { Database, ExternalLink } from "lucide-react";
@@ -66,10 +66,10 @@ function IntelList({ title, items }: { title: string; items: string[] }) {
   );
 }
 
-export default function SourcesPage() {
-  const db = getDb();
-  const stats = computeStats(db.jobs);
-  const total = db.jobs.length;
+export default async function SourcesPage() {
+  const jobs = await getJobs();
+  const stats = computeStats(jobs);
+  const total = jobs.length;
 
   return (
     <div className="px-2 py-2 max-w-5xl">
