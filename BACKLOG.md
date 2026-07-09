@@ -3,14 +3,19 @@
 Canonical project backlog. Edit this file directly — `/backlog` in the app renders it.
 Format: `## Now / Next / Later / Done` sections with `- item` lines; keep one item per line.
 
-## Now
+## Now — Supabase migration (in order)
 
-- (empty — pick from Next)
+- Provision Supabase project + `jobs` table: columns mirroring the Job schema (snake_case), `raw` as jsonb, UNIQUE (source, source_id), indexes on created_at/source/type, numeric salary_min/salary_max
+- Scraper writes to Supabase via PostgREST upsert (stdlib urllib, on_conflict=source,source_id) — dual-write with db.json during transition; add SUPABASE_URL + secret key to GitHub Actions
+- Retention change: keep history — mark jobs stale instead of deleting after 7 days; "fresh" becomes a filtered view (free archive)
+- Frontend reads from Supabase (jobs table, /sources stats, /dataset) instead of db.json
+- /query v2 — Gemini text-to-SQL: schema in prompt, show generated SQL, execute via READ-ONLY role + single-SELECT validation + statement_timeout (never execute LLM SQL with a privileged key)
+- Retire db.json dual-write once Supabase is stable
 
 ## Next
 
-- Deploy to Vercel — daily scrape commit auto-triggers redeploy with fresh data
-- Frontend filters on the jobs table: source, job type, salary sort (needs numeric salary), company logos
+- Deploy to Vercel — env vars for GEMINI_API_KEY + Supabase keys
+- Frontend filters on the jobs table: source, job type, salary sort (numeric salary now available), company logos
 - Bump GitHub Actions versions (checkout, setup-python) — Node 20 deprecation warning in CI
 
 ## Later
