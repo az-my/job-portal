@@ -41,6 +41,9 @@ jobs:
           python-version: "3.12"
 
       - name: Run scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
         run: python scraper/main.py "${{ inputs.max_pages || '5' }}" "${{ inputs.source || 'all' }}"
 
       - name: Commit updated database

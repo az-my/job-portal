@@ -5,10 +5,8 @@ Format: `## Now / Next / Later / Done` sections with `- item` lines; keep one it
 
 ## Now — Supabase migration (in order)
 
-- Provision Supabase project + `jobs` table: columns mirroring the Job schema (snake_case), `raw` as jsonb, UNIQUE (source, source_id), indexes on created_at/source/type, numeric salary_min/salary_max
-- Scraper writes to Supabase via PostgREST upsert (stdlib urllib, on_conflict=source,source_id) — dual-write with db.json during transition; add SUPABASE_URL + secret key to GitHub Actions
-- Retention change: keep history — mark jobs stale instead of deleting after 7 days; "fresh" becomes a filtered view (free archive)
-- Frontend reads from Supabase (jobs table, /sources stats, /dataset) instead of db.json
+- BLOCKED on user: add SUPABASE_SECRET_KEY (sb_secret_… from dashboard → project settings → API keys) to .env.local and GitHub secrets so scraper writes flow (SUPABASE_URL secret already set)
+- Frontend reads from Supabase (jobs page, /sources stats, /dataset) instead of db.json
 - /query v2 — Gemini text-to-SQL: schema in prompt, show generated SQL, execute via READ-ONLY role + single-SELECT validation + statement_timeout (never execute LLM SQL with a privileged key)
 - Retire db.json dual-write once Supabase is stable
 
@@ -39,3 +37,5 @@ Format: `## Now / Next / Later / Done` sections with `- item` lines; keep one it
 - /backlog page rendering this file
 - /query page: NL search via Gemini (gemini-2.5-flash, structured output, keyword fallback); GEMINI_API_KEY in .env.local
 - Numeric salaryMin/salaryMax stored at normalize time for all four sources (JobStreet parses the display label)
+- Supabase project "job-portal" (wlxntcsxadknyhyixegf, ap-southeast-1): jobs table, UNIQUE (source, source_id), jobs_fresh view, RLS public-read, is_stale retention (no deletes — history kept)
+- Scraper dual-write via PostgREST upsert (stdlib urllib) + mark_stale; graceful skip when unconfigured; 509 jobs backfilled

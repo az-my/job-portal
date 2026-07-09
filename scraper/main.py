@@ -14,6 +14,7 @@ import dealls
 import glints
 import jobstreet
 import kalibrr
+import supabase_store
 from normalize import normalize_jobs
 from storage import cleanup_jobs, get_stats, merge_jobs
 
@@ -70,6 +71,7 @@ def run_scraper(max_pages=3, source="all"):
         futures = {name: pool.submit(_fetch_source, name, max_pages) for name in selected}
 
     results = []
+    all_normalized = []
     for name in selected:
         try:
             normalized = futures[name].result()
@@ -80,8 +82,21 @@ def run_scraper(max_pages=3, source="all"):
             print(f"[scraper] {name} returned no recent data, skipping.")
             continue
         inserted, updated = merge_jobs(normalized)
+        all_normalized.extend(normalized)
         print(f"[scraper] {name} done: {len(normalized)} jobs found, {inserted} new, {updated} updated")
         results.append({"source": name, "found": len(normalized), "inserted": inserted, "updated": updated})
+
+    # --- Dual-write to Supabase (optional until migration completes) ---
+    if all_normalized:
+        try:
+            written = supabase_store.upsert_jobs(all_normalized)
+            if written is None:
+                print("[scraper] Supabase not configured (SUPABASE_URL/SUPABASE_SECRET_KEY), skipping dual-write.")
+            else:
+                supabase_store.mark_stale(7)
+                print(f"[scraper] Supabase: upserted {written} rows, refreshed stale flags")
+        except Exception as err:
+            print(f"[scraper] Supabase dual-write failed (db.json unaffected): {err}", file=sys.stderr)
 
     print("[scraper] Running cleanup...")
     removed, removed_manual = cleanup_jobs(7)
