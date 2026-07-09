@@ -19,10 +19,19 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "KerjaRadar — Job Aggregator Console",
+  title: "KerjaRadar — Job Aggregator",
   description:
     "Live radar over Indonesian job boards: JobStreet, Dealls, Kalibrr, and Glints aggregated, deduped, and queryable.",
 };
+
+const themeScript = `
+(() => {
+  try {
+    const theme = localStorage.getItem("theme");
+    if (theme === "dark") document.documentElement.classList.add("dark");
+  } catch {}
+})();
+`;
 
 export default function RootLayout({
   children,
@@ -32,8 +41,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark ${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-full flex flex-col">
         <div className="scanline" aria-hidden />
         <TopBar />

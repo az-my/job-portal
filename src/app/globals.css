@@ -56,36 +56,34 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Dark-only console. The control room has no light mode. */
-:root,
-.dark {
-  --background: oklch(0.145 0.02 275);
-  --foreground: oklch(0.95 0.01 275);
-  --card: oklch(0.19 0.024 275 / 0.72);
-  --card-foreground: oklch(0.95 0.01 275);
-  --popover: oklch(0.2 0.024 275);
-  --popover-foreground: oklch(0.95 0.01 275);
-  --primary: oklch(0.65 0.21 292);
-  --primary-foreground: oklch(0.98 0.005 275);
-  --secondary: oklch(0.26 0.03 280);
-  --secondary-foreground: oklch(0.95 0.01 275);
-  --muted: oklch(0.24 0.025 278);
-  --muted-foreground: oklch(0.68 0.022 278);
-  --accent: oklch(0.28 0.04 288);
-  --accent-foreground: oklch(0.96 0.01 275);
-  --destructive: oklch(0.68 0.19 22);
-  --border: oklch(0.92 0.02 280 / 10%);
-  --input: oklch(0.92 0.02 280 / 14%);
-  --ring: oklch(0.65 0.21 292 / 60%);
-  --radius: 0.75rem;
+:root {
+  --background: #ffffff;
+  --foreground: #0f0f0f;
+  --card: #ffffff;
+  --card-foreground: #0f0f0f;
+  --popover: #ffffff;
+  --popover-foreground: #0f0f0f;
+  --primary: #ff0033;
+  --primary-foreground: #ffffff;
+  --secondary: #f2f2f2;
+  --secondary-foreground: #0f0f0f;
+  --muted: #f7f7f7;
+  --muted-foreground: #606060;
+  --accent: #f2f2f2;
+  --accent-foreground: #0f0f0f;
+  --destructive: #cc0000;
+  --border: #e5e5e5;
+  --input: #d9d9d9;
+  --ring: color-mix(in srgb, var(--primary) 35%, transparent);
+  --radius: 0.5rem;
 
   /* provenance hues */
-  --source-jobstreet: oklch(0.66 0.17 245);
-  --source-dealls: oklch(0.68 0.2 320);
-  --source-kalibrr: oklch(0.75 0.13 180);
-  --source-glints: oklch(0.8 0.14 85);
-  --mint: oklch(0.8 0.15 165);
-  --cyan-glow: oklch(0.78 0.13 210);
+  --source-jobstreet: #1a73e8;
+  --source-dealls: #c2185b;
+  --source-kalibrr: #00897b;
+  --source-glints: #f57c00;
+  --mint: #008060;
+  --cyan-glow: #065fd4;
 
   --chart-1: var(--source-jobstreet);
   --chart-2: var(--source-dealls);
@@ -93,12 +91,41 @@
   --chart-4: var(--source-glints);
   --chart-5: var(--primary);
 
-  --sidebar: oklch(0.18 0.022 275);
-  --sidebar-foreground: oklch(0.95 0.01 275);
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f0f0f;
   --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: oklch(0.98 0.005 275);
-  --sidebar-accent: oklch(0.26 0.03 280);
-  --sidebar-accent-foreground: oklch(0.95 0.01 275);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f2f2f2;
+  --sidebar-accent-foreground: #0f0f0f;
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+}
+
+.dark {
+  --background: #0f0f0f;
+  --foreground: #f1f1f1;
+  --card: #181818;
+  --card-foreground: #f1f1f1;
+  --popover: #212121;
+  --popover-foreground: #f1f1f1;
+  --primary: #ff0033;
+  --primary-foreground: #ffffff;
+  --secondary: #272727;
+  --secondary-foreground: #f1f1f1;
+  --muted: #212121;
+  --muted-foreground: #aaa;
+  --accent: #272727;
+  --accent-foreground: #f1f1f1;
+  --destructive: #ff4e45;
+  --border: #303030;
+  --input: #3f3f3f;
+  --ring: color-mix(in srgb, var(--primary) 45%, transparent);
+  --sidebar: #0f0f0f;
+  --sidebar-foreground: #f1f1f1;
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #272727;
+  --sidebar-accent-foreground: #f1f1f1;
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 }
@@ -109,11 +136,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image:
-      radial-gradient(1100px 500px at 12% -10%, oklch(0.65 0.21 292 / 0.13), transparent 65%),
-      radial-gradient(900px 480px at 95% 0%, oklch(0.78 0.13 210 / 0.08), transparent 60%),
-      radial-gradient(700px 500px at 50% 115%, oklch(0.68 0.2 320 / 0.07), transparent 60%);
-    background-attachment: fixed;
   }
   html {
     @apply font-sans;
@@ -122,61 +144,41 @@
     font-family: var(--font-display), var(--font-geist-sans), sans-serif;
   }
   ::selection {
-    background: oklch(0.65 0.21 292 / 0.45);
+    background: color-mix(in srgb, var(--primary) 22%, transparent);
   }
 }
 
 @layer components {
-  /* glass surface used by cards/bars across the console */
+  /* Plain product surface; kept as .glass to update existing pages consistently. */
   .glass {
-    background: oklch(0.2 0.025 278 / 0.55);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid oklch(0.92 0.02 280 / 0.09);
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: none;
   }
 
-  /* the signature: a live scanline sweeping the top of the console */
+  /* A restrained red product rule, replacing the old animated scanline. */
   .scanline {
     position: fixed;
     inset: 0 0 auto 0;
-    height: 2px;
+    height: 3px;
     z-index: 60;
     pointer-events: none;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      var(--source-kalibrr) 20%,
-      var(--primary) 45%,
-      var(--source-dealls) 70%,
-      var(--source-glints) 90%,
-      transparent 100%
-    );
-    background-size: 220% 100%;
-    animation: scan 9s linear infinite;
-    opacity: 0.85;
+    background: var(--primary);
   }
 
   .glow-hover {
-    transition: box-shadow 200ms ease, border-color 200ms ease, transform 200ms ease;
+    transition: background-color 160ms ease, border-color 160ms ease;
   }
   .glow-hover:hover {
-    box-shadow: 0 0 0 1px oklch(0.65 0.21 292 / 0.35), 0 8px 32px -8px oklch(0.65 0.21 292 / 0.25);
+    border-color: color-mix(in srgb, var(--foreground) 18%, var(--border));
+    background: color-mix(in srgb, var(--card) 92%, var(--muted));
   }
 
   .text-gradient {
-    background: linear-gradient(92deg, oklch(0.82 0.12 292), oklch(0.78 0.13 210));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--primary);
   }
 }
 
-@keyframes scan {
-  0% { background-position: 200% 0; }
-  100% { background-position: -20% 0; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .scanline { animation: none; }
   .glow-hover { transition: none; }
 }

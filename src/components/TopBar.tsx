@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Radar, Sparkles, Database, FileSpreadsheet, BookOpen, ListTodo, Briefcase } from "lucide-react";
+import { useSyncExternalStore } from "react";
+import { Sparkles, Database, FileSpreadsheet, BookOpen, ListTodo, Briefcase, Moon, Sun, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const PAGES = [
   { href: "/", label: "Jobs", icon: Briefcase },
@@ -13,43 +15,81 @@ const PAGES = [
   { href: "/backlog", label: "Backlog", icon: ListTodo },
 ];
 
+function ThemeToggle() {
+  const dark = useSyncExternalStore(
+    (onStoreChange) => {
+      window.addEventListener("storage", onStoreChange);
+      window.addEventListener("themechange", onStoreChange);
+      return () => {
+        window.removeEventListener("storage", onStoreChange);
+        window.removeEventListener("themechange", onStoreChange);
+      };
+    },
+    () => document.documentElement.classList.contains("dark"),
+    () => false
+  );
+
+  function toggleTheme() {
+    const next = !dark;
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+    window.dispatchEvent(new Event("themechange"));
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      onClick={toggleTheme}
+      aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
+      title={dark ? "Light theme" : "Dark theme"}
+      className="rounded-full"
+    >
+      {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+    </Button>
+  );
+}
+
 export function TopBar() {
   const pathname = usePathname();
 
   return (
-    <header className="glass sticky top-0 z-50 border-x-0 border-t-0 rounded-none">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="group flex items-center gap-2.5">
-          <span className="relative grid size-8 place-items-center rounded-lg bg-primary/15 ring-1 ring-primary/40 transition-shadow group-hover:shadow-[0_0_18px_-2px_var(--primary)]">
-            <Radar className="size-4.5 text-primary" />
+        <Link href="/" className="group flex shrink-0 items-center gap-2.5">
+          <span className="relative grid size-8 place-items-center rounded-md bg-primary text-primary-foreground">
+            <Play className="ml-0.5 size-4 fill-current" />
           </span>
-          <span className="font-display text-[15px] font-semibold tracking-tight">
-            <span className="text-gradient">KerjaRadar</span>
-            <span className="ml-2 hidden text-xs font-normal tracking-wide text-muted-foreground sm:inline">
-              job aggregator console
+          <span className="text-[15px] font-semibold tracking-tight">
+            KerjaRadar
+            <span className="ml-2 hidden text-xs font-normal text-muted-foreground sm:inline">
+              jobs
             </span>
           </span>
         </Link>
 
-        <nav className="flex items-center gap-1 overflow-x-auto">
-          {PAGES.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors ${
-                  active
-                    ? "bg-primary/15 text-foreground ring-1 ring-primary/40"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                }`}
-              >
-                <Icon className={`size-4 ${active ? "text-primary" : ""}`} />
-                <span className="hidden md:inline">{label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="flex min-w-0 items-center gap-2">
+          <nav className="flex min-w-0 items-center gap-1 overflow-x-auto">
+            {PAGES.map(({ href, label, icon: Icon }) => {
+              const active = pathname === href;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors ${
+                    active
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="size-4" />
+                  <span className="hidden md:inline">{label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

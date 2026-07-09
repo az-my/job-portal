@@ -47,17 +47,13 @@ function PulseStrip({ jobs }: { jobs: Job[] }) {
         return (
           <div
             key={source}
-            className="glass glow-hover relative overflow-hidden rounded-xl p-4"
-            style={{ boxShadow: `inset 3px 0 0 0 ${color}` }}
+            className="glass glow-hover rounded-lg p-4"
           >
-            <div
-              className="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full opacity-25 blur-2xl"
-              style={{ background: color }}
-            />
-            <div className="text-sm font-medium" style={{ color }}>
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <span className="size-2 rounded-full" style={{ background: color }} />
               {sourceLabel(source)}
             </div>
-            <div className="mt-1 font-display text-3xl font-semibold tabular-nums">{s.count}</div>
+            <div className="mt-2 text-3xl font-semibold tabular-nums">{s.count}</div>
             <div className="mt-1 text-xs text-muted-foreground">
               fresh listings · newest {timeAgo(s.newest)}
             </div>
@@ -231,8 +227,8 @@ export default function Dashboard({ initialJobs }: DashboardProps) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          Fresh on the <span className="text-gradient">radar</span>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Fresh job listings
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {jobs.length} listings posted in the last 7 days across four boards, deduped and refreshed daily.
@@ -241,7 +237,7 @@ export default function Dashboard({ initialJobs }: DashboardProps) {
 
       <PulseStrip jobs={jobs} />
 
-      <div className="glass rounded-xl p-3">
+      <div className="glass rounded-lg p-3">
         <DataTable columns={columns} data={jobs} searchKey="title" searchPlaceholder="Search title or company…" pageSize={25} />
       </div>
 
