@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+import { TopBar } from "@/components/TopBar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,9 +13,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-display",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "Solid Grid Job Portal - High Density Professional Platform",
-  description: "Browse premium job listings, manage applications, and connect with top recruiters on our high-contrast, fast-loading professional platform.",
+  title: "KerjaRadar — Job Aggregator Console",
+  description:
+    "Live radar over Indonesian job boards: JobStreet, Dealls, Kalibrr, and Glints aggregated, deduped, and queryable.",
 };
 
 export default function RootLayout({
@@ -25,9 +32,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`dark ${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <div className="scanline" aria-hidden />
+        <TopBar />
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
+      </body>
     </html>
   );
 }

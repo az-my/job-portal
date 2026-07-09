@@ -1,12 +1,13 @@
 import { getJobs, type Job } from "@/lib/db";
 import { SOURCE_INTEL, PIPELINE_NOTES } from "@/lib/source-intel";
-import { AdminNav } from "@/components/AdminNav";
+import { PageHeader } from "@/components/PageHeader";
+import { sourceColor } from "@/lib/sources";
 import { Database, ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Source Intel — Job Aggregator",
+  title: "Source Intel — KerjaRadar",
   description: "Endpoint findings, limitations, and field mappings for every scraped job portal.",
 };
 
@@ -42,9 +43,9 @@ function pct(part: number, total: number): string {
 
 function StatCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-border px-3 py-2">
-      <div className="text-muted-foreground uppercase tracking-wider text-xs">{label}</div>
-      <div className="font-mono">{value}</div>
+    <div className="rounded-lg bg-muted/40 px-3 py-2">
+      <div className="text-muted-foreground text-xs">{label}</div>
+      <div className="mt-0.5 font-mono text-mint">{value}</div>
     </div>
   );
 }
@@ -53,11 +54,11 @@ function IntelList({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
     <div>
-      <h3 className="uppercase tracking-widest text-xs font-bold text-muted-foreground mb-2">{title}</h3>
+      <h3 className="font-display text-sm font-semibold text-muted-foreground mb-2">{title}</h3>
       <ul className="space-y-1.5">
         {items.map((item) => (
           <li key={item} className="flex gap-2">
-            <span className="text-muted-foreground select-none">▪</span>
+            <span className="text-primary/70 select-none">▪</span>
             <span>{item}</span>
           </li>
         ))}
@@ -72,60 +73,64 @@ export default async function SourcesPage() {
   const total = jobs.length;
 
   return (
-    <div className="px-2 py-2 max-w-5xl">
-      <header className="mb-6 border-b border-border pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Database className="size-5" />
-            <h1 className="text-base font-bold uppercase tracking-widest">Source Intel</h1>
+    <div>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Database className="size-5 text-primary" /> Source Intel
+          </span>
+        }
+        description="Field notes from probing each portal's API: how to fetch the latest jobs, hard limits, error behavior, and how raw fields map into the unified Job schema. Internal / super-admin only."
+        actions={
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span>
+              <span className="font-mono text-mint">{SOURCE_INTEL.length}</span> endpoints
+            </span>
+            <span>
+              <span className="font-mono text-mint">{total}</span> jobs in DB
+            </span>
           </div>
-          <div className="flex items-center gap-4 text-muted-foreground">
-            <span>{SOURCE_INTEL.length} endpoints</span>
-            <span>{total} jobs in DB</span>
-            <AdminNav />
-          </div>
-        </div>
-        <p className="mt-2 text-muted-foreground">
-          Field notes from probing each portal&apos;s API: how to fetch the latest jobs, hard limits, error
-          behavior, and how raw fields map into the unified Job schema. Internal / super-admin only.
-        </p>
-      </header>
+        }
+      />
 
-      <section className="mb-8 border border-border p-4">
-        <h2 className="uppercase tracking-widest text-xs font-bold text-muted-foreground mb-3">
+      <section className="glass rounded-xl p-5 mb-8">
+        <h2 className="font-display text-sm font-semibold text-muted-foreground mb-3">
           Pipeline Rules (apply to every source)
         </h2>
         <ul className="space-y-1.5">
           {PIPELINE_NOTES.map((note) => (
             <li key={note} className="flex gap-2">
-              <span className="text-muted-foreground select-none">▪</span>
+              <span className="text-primary/70 select-none">▪</span>
               <span>{note}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      <div className="space-y-8">
+      <div className="space-y-6">
         {SOURCE_INTEL.map((src) => {
           const s = stats[src.id];
+          const hue = sourceColor(src.id);
           return (
-            <section key={src.id} id={src.id} className="border border-border">
-              <div className="border-b border-border px-4 py-3 flex items-center justify-between bg-muted/30">
+            <section key={src.id} id={src.id} className="glass glow-hover rounded-xl overflow-hidden">
+              <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-3 border-b border-border/60">
                 <div className="flex items-center gap-3">
-                  <h2 className="font-bold uppercase tracking-widest">{src.name}</h2>
-                  <span className="border border-border px-1.5 py-0.5 text-xs font-mono">{src.method}</span>
+                  <h2 className="font-display text-lg font-semibold" style={{ color: hue }}>
+                    {src.name}
+                  </h2>
+                  <span className="rounded-full bg-muted/60 px-2 py-0.5 text-xs font-mono">{src.method}</span>
                   <span className="text-muted-foreground text-xs">{src.kind}</span>
                 </div>
                 <span className="font-mono text-xs text-muted-foreground">{src.collector}</span>
               </div>
 
-              <div className="px-4 py-3 border-b border-border">
-                <code className="font-mono break-all">
-                  {src.method} {src.endpoint}
+              <div className="px-5 py-3 border-b border-border/60">
+                <code className="font-mono text-xs break-all text-muted-foreground">
+                  <span style={{ color: hue }}>{src.method}</span> {src.endpoint}
                 </code>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 px-4 py-3 border-b border-border">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 px-5 py-4 border-b border-border/60">
                 <StatCell label="In DB" value={s ? String(s.count) : "0"} />
                 <StatCell label="Newest" value={s ? fmtDate(s.newest) : "—"} />
                 <StatCell label="Oldest" value={s ? fmtDate(s.oldest) : "—"} />
@@ -133,7 +138,7 @@ export default async function SourcesPage() {
                 <StatCell label="Has location" value={s ? pct(s.withLocation, s.count) : "—"} />
               </div>
 
-              <div className="px-4 py-4 grid gap-5 md:grid-cols-2">
+              <div className="px-5 py-4 grid gap-6 md:grid-cols-2">
                 <div className="space-y-5">
                   <IntelList
                     title="How to get the latest jobs"
@@ -148,16 +153,18 @@ export default async function SourcesPage() {
                 </div>
               </div>
 
-              <div className="px-4 pb-4">
-                <h3 className="uppercase tracking-widest text-xs font-bold text-muted-foreground mb-2">
+              <div className="px-5 pb-5">
+                <h3 className="font-display text-sm font-semibold text-muted-foreground mb-2">
                   Field mapping (API → Job)
                 </h3>
-                <div className="overflow-x-auto border border-border">
+                <div className="overflow-x-auto rounded-lg border border-border/60">
                   <table className="w-full text-left">
-                    <tbody>
+                    <tbody className="divide-y divide-border/60">
                       {src.fieldMap.map(([from, to]) => (
-                        <tr key={from} className="border-b border-border last:border-b-0">
-                          <td className="px-3 py-1.5 font-mono text-xs whitespace-nowrap">{from}</td>
+                        <tr key={from} className="hover:bg-accent/40 transition-colors">
+                          <td className="px-3 py-1.5 font-mono text-xs whitespace-nowrap" style={{ color: hue }}>
+                            {from}
+                          </td>
                           <td className="px-3 py-1.5 text-muted-foreground">→ {to}</td>
                         </tr>
                       ))}

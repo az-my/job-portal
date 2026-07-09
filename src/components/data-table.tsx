@@ -78,7 +78,7 @@ export function DataTable<TData, TValue>({
             placeholder={searchPlaceholder}
             value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
             onChange={(e) => table.getColumn(searchKey)?.setFilterValue(e.target.value)}
-            className="h-8 pl-8 max-w-sm border-border text-base"
+            className="h-9 max-w-sm rounded-full border-border/70 bg-background/50 pl-8 text-sm transition-shadow focus-visible:shadow-[0_0_0_3px_var(--ring)]"
           />
           {!!table.getColumn(searchKey)?.getFilterValue() && (
             <Button
@@ -93,7 +93,7 @@ export function DataTable<TData, TValue>({
         </div>
       )}
 
-      <div className="border border-border">
+      <div className="overflow-hidden rounded-lg border border-border/60">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -111,7 +111,7 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className="transition-colors hover:bg-accent/40">
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -131,7 +131,7 @@ export function DataTable<TData, TValue>({
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-base text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           {table.getFilteredRowModel().rows.length} row{table.getFilteredRowModel().rows.length !== 1 ? "s" : ""}
         </p>
         <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export function DataTable<TData, TValue>({
           >
             <ChevronLeft className="size-4" />
           </Button>
-          <span className="text-base text-muted-foreground tabular-nums">
+          <span className="text-sm text-muted-foreground tabular-nums">
             {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
           </span>
           <Button

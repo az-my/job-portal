@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { AdminNav } from "@/components/AdminNav";
+import { PageHeader } from "@/components/PageHeader";
 import { BookOpen } from "lucide-react";
 
 export const metadata = {
-  title: "Wiki — Job Aggregator",
+  title: "Wiki — KerjaRadar",
   description: "Architecture, runbook, and decisions log for the job aggregator.",
 };
 
@@ -78,11 +78,11 @@ function KvTable({ rows, mono = false }: { rows: [string, string][]; mono?: bool
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left">
-        <tbody>
+        <tbody className="divide-y divide-border/60">
           {rows.map(([k, v]) => (
-            <tr key={k} className="border-b border-border last:border-b-0 align-top">
-              <td className="px-4 py-2 font-medium w-1/3">{k}</td>
-              <td className={`px-3 py-2 text-muted-foreground ${mono ? "font-mono text-xs" : ""}`}>{v}</td>
+            <tr key={k} className="align-top hover:bg-accent/40 transition-colors">
+              <td className="px-5 py-2.5 font-medium w-1/3">{k}</td>
+              <td className={`px-3 py-2.5 text-muted-foreground ${mono ? "font-mono text-xs" : ""}`}>{v}</td>
             </tr>
           ))}
         </tbody>
@@ -93,10 +93,8 @@ function KvTable({ rows, mono = false }: { rows: [string, string][]; mono?: bool
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="border border-border mb-4">
-      <h2 className="border-b border-border px-4 py-2 uppercase tracking-widest text-xs font-bold bg-muted/30">
-        {title}
-      </h2>
+    <section className="glass rounded-xl overflow-hidden mb-4">
+      <h2 className="font-display text-sm font-semibold text-muted-foreground px-5 pt-4 pb-3">{title}</h2>
       {children}
     </section>
   );
@@ -104,27 +102,27 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function WikiPage() {
   return (
-    <div className="px-2 py-2 max-w-4xl">
-      <header className="mb-6 border-b border-border pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BookOpen className="size-5" />
-            <h1 className="text-base font-bold uppercase tracking-widest">Wiki</h1>
-          </div>
-          <AdminNav />
-        </div>
-        <p className="mt-2 text-muted-foreground">
-          How this thing works and why it is built this way. Per-endpoint API detail lives in{" "}
-          <Link href="/sources" className="underline underline-offset-2 hover:text-foreground">
-            Sources
-          </Link>
-          ; repo docs in README.md / ABOUT.md.
-        </p>
-      </header>
+    <div>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <BookOpen className="size-5 text-primary" /> Wiki
+          </span>
+        }
+        description={
+          <>
+            How this thing works and why it is built this way. Per-endpoint API detail lives in{" "}
+            <Link href="/sources" className="text-primary underline underline-offset-2 hover:text-foreground">
+              Sources
+            </Link>
+            ; repo docs in README.md / ABOUT.md.
+          </>
+        }
+      />
 
       <Section title="Architecture">
-        <div className="px-4 py-3 space-y-3">
-          <pre className="font-mono text-xs leading-relaxed overflow-x-auto border border-border bg-muted/30 p-3">
+        <div className="px-5 pb-4 space-y-3">
+          <pre className="font-mono text-xs leading-relaxed overflow-x-auto rounded-lg border border-border/60 bg-background/60 p-4">
 {`GitHub Actions (daily 08:00 WIB / manual dispatch)
         │
         ▼
