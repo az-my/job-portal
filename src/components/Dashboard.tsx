@@ -98,6 +98,37 @@ function deallsSlug(job: Job): string {
   }
 }
 
+function kalibrrCode(job: Job): string {
+  if (job.source !== "kalibrr") return "";
+  const raw = parseRaw(job);
+  const company = asRecord(raw.company);
+  const companyInfo = asRecord(raw.company_info);
+  return text(company.code) || text(companyInfo.code) || "";
+}
+
+function kalibrrSlug(job: Job): string {
+  if (job.source !== "kalibrr") return "";
+  const rawSlug = text(parseRaw(job).slug);
+  if (rawSlug) return rawSlug;
+  if (!job.url) return "";
+  try {
+    return new URL(job.url).pathname.split("/").filter(Boolean).at(-1) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function plainDraftJs(value: unknown): string {
+  if (!value || typeof value !== "string") return "";
+  try {
+    const parsed = JSON.parse(value) as { blocks?: Array<{ text?: string }> };
+    if (!Array.isArray(parsed.blocks)) return "";
+    return parsed.blocks.map((block) => block.text || "").join("\n").trim();
+  } catch {
+    return "";
+  }
+}
+
 function plainHtml(value: unknown): string {
   return text(value)
     .replace(/<br\s*\/?>/gi, "\n")
@@ -176,86 +207,75 @@ function exploreMeta(job: Job): ExploreMeta {
   return { workSetup: [humanize(job.type)], category: "", highlights: [], signals: [], verified: false, sponsored: false };
 }
 
-function MetaChip({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex min-h-7 items-center rounded-full border bg-muted/45 px-2.5 py-1 text-sm font-semibold text-foreground/80">
-      {children}
-    </span>
-  );
-}
-
 function ExploreJobCard({ job, onOpen }: { job: Job; onOpen: () => void }) {
   const meta = exploreMeta(job);
   const sourceHue = sourceColor(job.source);
 
   return (
     <Card
-      className="min-h-[23rem] gap-0 border-t-4 py-0 transition-colors hover:bg-muted/20"
+      className="gap-0 border-t-4 transition-colors hover:bg-muted/20"
       style={{ borderTopColor: sourceHue }}
     >
-      <CardHeader className="gap-4 px-5 pb-4 pt-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
+      <CardHeader className="gap-2 px-4 pb-3 pt-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2.5">
             {job.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={job.logoUrl} alt="" className="size-12 shrink-0 rounded-lg border bg-white object-contain p-1.5" loading="lazy" />
+              <img src={job.logoUrl} alt="" className="size-9 shrink-0 rounded-lg border bg-white object-contain p-1" loading="lazy" />
             ) : (
-              <span className="grid size-12 shrink-0 place-items-center rounded-lg text-base font-bold" style={{ color: sourceHue, background: `color-mix(in srgb, ${sourceHue} 12%, transparent)` }}>
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg text-sm font-bold" style={{ color: sourceHue, background: `color-mix(in srgb, ${sourceHue} 12%, transparent)` }}>
                 {job.company.slice(0, 1).toUpperCase()}
               </span>
             )}
             <div className="min-w-0">
-              <p className="flex items-center gap-1.5 truncate text-base font-bold">
+              <p className="flex items-center gap-1 truncate text-sm font-bold">
                 <span className="truncate">{job.company}</span>
-                {meta.verified && <CheckCircle2 className="size-4 shrink-0 text-mint" aria-label="Verified company" />}
+                {meta.verified && <CheckCircle2 className="size-3.5 shrink-0 text-mint" aria-label="Verified company" />}
               </p>
             </div>
           </div>
-          <div className="flex flex-wrap justify-end gap-1.5">
-            {meta.sponsored && <MetaChip>Sponsored</MetaChip>}
+          <div className="flex shrink-0 flex-wrap justify-end gap-1">
+            {meta.sponsored && <span className="text-xs font-semibold text-mint">Sponsored</span>}
             <SourceBadge source={job.source} />
           </div>
         </div>
 
-        <CardTitle className="text-xl font-bold leading-snug">
+        <CardTitle className="text-base font-bold leading-snug">
           <button type="button" onClick={onOpen} className="cursor-pointer text-left outline-none hover:text-primary focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring/50">
             {job.title}
           </button>
         </CardTitle>
-        {meta.category && <p className="text-sm font-semibold text-muted-foreground">{meta.category}</p>}
+        {meta.category && <p className="text-xs font-medium text-muted-foreground">{meta.category}</p>}
       </CardHeader>
 
-      <CardContent className="flex flex-1 flex-col gap-5 px-5 pb-5">
-        <div className="grid gap-3 text-base">
-          <div className="flex items-start gap-2.5 text-muted-foreground">
-            <MapPin className="mt-0.5 size-4 shrink-0" />
-            <span className="line-clamp-2">{job.location || "Location not provided"}</span>
+      <CardContent className="flex flex-1 flex-col gap-2 px-4 pb-4">
+        <div className="grid gap-1.5 text-sm">
+          <div className="flex items-start gap-2 text-muted-foreground">
+            <MapPin className="mt-0.5 size-3.5 shrink-0" />
+            <span className="line-clamp-1">{job.location || "Location not provided"}</span>
           </div>
-          <div className="flex items-start gap-2.5 text-muted-foreground">
-            <BriefcaseBusiness className="mt-0.5 size-4 shrink-0" />
+          <div className="flex items-start gap-2 text-muted-foreground">
+            <BriefcaseBusiness className="mt-0.5 size-3.5 shrink-0" />
             <span>{meta.workSetup.join(" · ") || humanize(job.type)}</span>
           </div>
         </div>
 
-        {meta.highlights.length > 0 && (
-          <div className="flex flex-wrap gap-1.5" aria-label="Skills and highlights">
-            {meta.highlights.map((highlight) => <MetaChip key={highlight}>{highlight}</MetaChip>)}
-          </div>
-        )}
+        <p className="line-clamp-2 text-sm leading-relaxed text-foreground/75">
+          {job.description || "No description available."}
+        </p>
 
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5"><CalendarClock className="size-4" />{timeAgo(job.createdAt)}</span>
-          {meta.signals.map((signal) => <MetaChip key={signal}>{signal}</MetaChip>)}
+        <div className="mt-auto flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1"><CalendarClock className="size-3" />{timeAgo(job.createdAt)}</span>
         </div>
 
-        <div className="mt-auto border-t pt-4">
-          <p className={`text-lg font-bold ${job.salary ? "font-mono text-mint" : "text-foreground"}`}>
+        <div className="border-t pt-2.5">
+          <p className={`text-sm font-bold ${job.salary ? "font-mono text-mint" : "text-foreground"}`}>
             {job.salary || "Salary not disclosed"}
           </p>
         </div>
       </CardContent>
 
-      <CardFooter className="justify-between gap-3 bg-muted/35 px-5 py-3">
+      <CardFooter className="justify-between gap-2 bg-muted/35 px-4 py-2.5 text-xs">
         <Button variant="outline" size="sm" onClick={onOpen}>View details</Button>
         {job.url && (
           <Button
@@ -264,7 +284,7 @@ function ExploreJobCard({ job, onOpen }: { job: Job; onOpen: () => void }) {
             render={<a href={job.url} target="_blank" rel="noopener noreferrer" />}
             nativeButton={false}
           >
-            Open listing <ExternalLink className="size-4" />
+            Open listing <ExternalLink className="size-3.5" />
           </Button>
         )}
       </CardFooter>
@@ -320,24 +340,49 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
   const deallsError = deallsFailure?.slug === slug ? deallsFailure.message : "";
   const deallsLoading = job.source === "dealls" && Boolean(slug) && !deallsDetail && !deallsError;
 
+  const kalibrrId = job.source === "kalibrr" ? job.sourceId : "";
+  const kalibrrCompanyCode = kalibrrCode(job);
+  const kalibrrSlugValue = kalibrrSlug(job);
+  const [kalibrrDetail, setKalibrrDetail] = useState<Record<string, unknown> | null>(null);
+  const [kalibrrFailure, setKalibrrFailure] = useState<string | null>(null);
+  const kalibrrKey = `${kalibrrId}::${kalibrrCompanyCode}::${kalibrrSlugValue}`;
+  const kalibrrLoading = job.source === "kalibrr" && Boolean(kalibrrId && kalibrrCompanyCode && kalibrrSlugValue) && !kalibrrDetail && !kalibrrFailure;
+
   useEffect(() => {
-    if (!open || job.source !== "dealls" || !slug) return;
+    if (!open) return;
     const controller = new AbortController();
 
-    fetch(`/api/jobs/dealls/${encodeURIComponent(slug)}`, { signal: controller.signal })
-      .then(async (response) => {
-        const payload = await response.json() as DeallsDetailResponse;
-        if (!response.ok) throw new Error(payload.error || `Detail request failed (${response.status})`);
-        setDeallsResult({ slug, payload });
-      })
-      .catch((error: unknown) => {
-        if (error instanceof Error && error.name !== "AbortError") {
-          setDeallsFailure({ slug, message: error.message });
-        }
-      });
+    if (job.source === "dealls" && slug) {
+      fetch(`/api/jobs/dealls/${encodeURIComponent(slug)}`, { signal: controller.signal })
+        .then(async (response) => {
+          const payload = await response.json() as DeallsDetailResponse;
+          if (!response.ok) throw new Error(payload.error || `Detail request failed (${response.status})`);
+          setDeallsResult({ slug, payload });
+        })
+        .catch((error: unknown) => {
+          if (error instanceof Error && error.name !== "AbortError") {
+            setDeallsFailure({ slug, message: error.message });
+          }
+        });
+    }
+
+    if (job.source === "kalibrr" && kalibrrId && kalibrrCompanyCode && kalibrrSlugValue) {
+      const params = new URLSearchParams({ companyCode: kalibrrCompanyCode, slug: kalibrrSlugValue });
+      fetch(`/api/jobs/kalibrr/${encodeURIComponent(kalibrrId)}?${params}`, { signal: controller.signal })
+        .then(async (response) => {
+          const payload = await response.json() as Record<string, unknown>;
+          if (!response.ok) throw new Error((payload.error as string) || `Detail request failed (${response.status})`);
+          setKalibrrDetail(payload);
+        })
+        .catch((error: unknown) => {
+          if (error instanceof Error && error.name !== "AbortError") {
+            setKalibrrFailure(error.message);
+          }
+        });
+    }
 
     return () => controller.abort();
-  }, [job.source, open, slug]);
+  }, [job.source, open, slug, kalibrrId, kalibrrCompanyCode, kalibrrSlugValue]);
 
   const raw = parseRaw(job);
   const deallsJob = asRecord(deallsDetail?.data?.result);
@@ -378,13 +423,86 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
     ? (deallsDetail ?? { message: deallsLoading ? "Loading on-demand detail" : "On-demand detail unavailable" })
     : raw;
 
+  const kalibrrJob = job.source === "kalibrr" ? kalibrrDetail : null;
+  const kalibrrDescription = plainHtml(text(asRecord(asRecord(kalibrrJob).description)));
+  const kalibrrQualifications = plainHtml(text(asRecord(kalibrrJob).qualifications));
+  const kalibrrCompanyObj = asRecord(asRecord(kalibrrJob).company);
+  const kalibrrCompanyInfo = asRecord(asRecord(kalibrrJob).companyInfo);
+  const kalibrrGoogleLocation = asRecord(asRecord(kalibrrJob).googleLocation);
+  const kalibrrAddressComponents = asRecord(kalibrrGoogleLocation.addressComponents);
+  const kalibrrDetailTenure = text(asRecord(kalibrrJob).tenure);
+  const kalibrrDetailSalaryBase = asRecord(kalibrrJob).baseSalary as number | undefined;
+  const kalibrrDetailSalaryMax = asRecord(kalibrrJob).maximumSalary as number | undefined;
+  const kalibrrSalaryText = kalibrrDetailSalaryBase
+    ? `Rp${Number(kalibrrDetailSalaryBase).toLocaleString("id-ID")}${kalibrrDetailSalaryMax && kalibrrDetailSalaryMax !== kalibrrDetailSalaryBase ? ` – Rp${Number(kalibrrDetailSalaryMax).toLocaleString("id-ID")}` : ""}`
+    : job.salary;
+  const kalibrrDetailDescription = kalibrrDescription || job.description;
+  const kalibrrDetailRequirements = kalibrrQualifications || job.requirements || "";
+  const kalibrrDetailLocation = kalibrrAddressComponents.city
+    ? [text(kalibrrAddressComponents.city), text(kalibrrAddressComponents.region), text(kalibrrAddressComponents.country)].filter(Boolean).join(", ")
+    : job.location;
+  const kalibrrDetailWorkType = kalibrrDetailTenure
+    ? kalibrrDetailTenure.toLowerCase().includes("part")
+      ? "part-time"
+      : kalibrrDetailTenure.toLowerCase().includes("contract") || kalibrrDetailTenure.toLowerCase().includes("freelance")
+        ? "contract"
+        : "full-time"
+    : job.type;
+  const kalibrrEvidence = job.source === "kalibrr"
+    ? (kalibrrDetail ?? { message: kalibrrLoading ? "Loading on-demand detail" : "On-demand detail unavailable" })
+    : evidence;
+
+  const glintsJob = job.source === "glints" ? parseRaw(job) : null;
+  const glintsDescription = plainDraftJs(text(asRecord(glintsJob).descriptionJsonString));
+  const glintsCompany = asRecord(asRecord(glintsJob).company);
+  const glintsCompanyDesc = plainDraftJs(text(glintsCompany.descriptionJsonString));
+  const glintsCategory = asRecord(asRecord(glintsJob).hierarchicalJobCategory);
+  const glintsSalaries = Array.isArray(asRecord(glintsJob).salaries) ? asRecord(glintsJob).salaries as unknown[] : [];
+  const glintsSalaryText = glintsSalaries.length > 0
+    ? glintsSalaries.map((s: unknown) => {
+        const sr = s as Record<string, unknown>;
+        const min = sr.minAmount;
+        const max = sr.maxAmount;
+        if (!min && !max) return "";
+        const currency = text(sr.CurrencyCode) || "IDR";
+        if (currency === "IDR") {
+          const parts = [];
+          if (min) parts.push(`Rp${Number(min).toLocaleString("id-ID")}`);
+          if (max) parts.push(`Rp${Number(max).toLocaleString("id-ID")}`);
+          return parts.join(" – ");
+        }
+        return [min, max].filter(Boolean).join("-") + ` ${currency}`;
+      }).filter(Boolean).join(", ")
+    : job.salary;
+  const glintsLocation = [text(asRecord(asRecord(glintsJob).city).name), text(asRecord(asRecord(glintsJob).country).name)].filter(Boolean).join(", ") || job.location;
+  const glintsWorkType = text(asRecord(glintsJob).workArrangementOption) === "REMOTE"
+    ? "remote"
+    : humanize(text(asRecord(glintsJob).type)) || job.type;
+  const glintsBanner = text(asRecord(glintsJob).bannerPic);
+  const glintsEvidence = job.source === "glints" ? glintsJob : evidence;
+
+  const effLocation = job.source === "kalibrr" ? kalibrrDetailLocation : job.source === "glints" ? glintsLocation : detailLocation;
+  const effWorkType = job.source === "kalibrr" ? kalibrrDetailWorkType : job.source === "glints" ? glintsWorkType : detailWorkType;
+  const effSalary = job.source === "kalibrr" ? kalibrrSalaryText : job.source === "glints" ? glintsSalaryText : salaryText;
+  const effDescription = job.source === "kalibrr" ? kalibrrDetailDescription : job.source === "glints" ? (glintsDescription || job.description) : detailDescription;
+  const effRequirements = job.source === "kalibrr" ? kalibrrDetailRequirements : job.source === "glints" ? job.requirements || "" : detailRequirements;
+  const effEvidence = job.source === "kalibrr" ? kalibrrEvidence : job.source === "glints" ? glintsEvidence : evidence;
+  const effCompanyName = job.source === "kalibrr" ? text(kalibrrCompanyObj.name) || text(kalibrrCompanyInfo.name) || text(companyProfile.name) || job.company : job.source === "glints" ? text(glintsCompany.name) || job.company : text(deallsCompany.name) || text(companyProfile.name) || job.company;
+  const effIndustry = job.source === "kalibrr" ? text(kalibrrCompanyInfo.industry) || text(overview.industry) : job.source === "glints" ? text(asRecord(glintsCompany.industry).name) : text(deallsCompany.sector) || text(overview.industry);
+  const effCompanySize = job.source === "kalibrr" ? "" : job.source === "glints" ? humanize(text(glintsCompany.size)) : text(asRecord(overview.size).description) || (asRecord(deallsCompany.size).start ? `${String(asRecord(deallsCompany.size).start)}–${String(asRecord(deallsCompany.size).end || "+")}` : "");
+  const effWebsite = job.source === "kalibrr" ? text(kalibrrCompanyInfo.url) : job.source === "glints" ? text(glintsCompany.website) : text(deallsCompany.website) || text(asRecord(overview.website).url);
+  const effCompanyDesc = job.source === "kalibrr" ? plainHtml(text(kalibrrCompanyInfo.description)) || plainHtml(text(kalibrrCompanyObj.description)) : job.source === "glints" ? (glintsCompanyDesc ? <p>{glintsCompanyDesc}</p> : <p className="text-muted-foreground">No company profile was returned for this listing.</p>) : (plainHtml(deallsCompany.description) ? <p>{plainHtml(deallsCompany.description)}</p> : profileParagraphs.length ? profileParagraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p className="text-muted-foreground">No company profile was returned for this listing.</p>);
+  const effStatus = job.source === "kalibrr" ? "" : job.source === "glints" ? "" : status;
+
+  const coverUrl = job.source === "glints" ? glintsBanner : cover;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="!max-w-5xl gap-0 overflow-hidden p-0">
-        {cover && (
+        {coverUrl && (
           <div className="h-28 w-full overflow-hidden border-b bg-muted sm:h-36">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={cover} alt="" className="h-full w-full object-cover" />
+            <img src={coverUrl} alt="" className="h-full w-full object-cover" />
           </div>
         )}
         <DialogHeader className="border-b px-5 py-4 pr-14 sm:px-6">
@@ -400,9 +518,9 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
             <div className="min-w-0">
               <div className="mb-1.5 flex flex-wrap items-center gap-2">
                 <SourceBadge source={job.source} />
-                {status && (
+                {effStatus && (
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-mint">
-                    <CheckCircle2 className="size-3.5" />{status}
+                    <CheckCircle2 className="size-3.5" />{effStatus}
                   </span>
                 )}
               </div>
@@ -433,24 +551,30 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
             {job.source === "dealls" && deallsError && (
               <div className="border-b bg-destructive/10 px-5 py-2 text-xs text-destructive sm:px-6">{deallsError}. Showing stored listing data.</div>
             )}
+            {job.source === "kalibrr" && kalibrrLoading && (
+              <div className="border-b bg-muted/35 px-5 py-2 text-xs text-muted-foreground sm:px-6">Loading fresh Kalibrr details…</div>
+            )}
+            {job.source === "kalibrr" && kalibrrFailure && (
+              <div className="border-b bg-destructive/10 px-5 py-2 text-xs text-destructive sm:px-6">{kalibrrFailure}. Showing stored listing data.</div>
+            )}
             <TabsContent value="overview" className="m-0">
               <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_260px]">
                 <div className="px-5 py-5 sm:px-6">
                   <div className="grid grid-cols-2 gap-4 border-b pb-5 sm:grid-cols-4">
-                    <Fact icon={MapPin} label="Location" value={detailLocation} />
-                    <Fact icon={BriefcaseBusiness} label="Work type" value={detailWorkType} />
-                    <Fact icon={CircleDollarSign} label="Compensation" value={salaryText} />
+                    <Fact icon={MapPin} label="Location" value={effLocation} />
+                    <Fact icon={BriefcaseBusiness} label="Work type" value={effWorkType} />
+                    <Fact icon={CircleDollarSign} label="Compensation" value={effSalary} />
                     <Fact icon={CalendarClock} label="Posted" value={timeAgo(job.createdAt)} />
                   </div>
 
                   <section className="py-6">
                     <h2 className="text-base font-bold">Role description</h2>
                     <p className="mt-3 max-w-4xl whitespace-pre-line text-base leading-7 text-foreground/85">
-                      {detailDescription || "No description was returned by the source."}
+                      {effDescription || "No description was returned by the source."}
                     </p>
                   </section>
 
-                  {(bullets.length > 0 || detailRequirements) && (
+                  {(bullets.length > 0 || effRequirements) && (
                     <section className="border-t py-6">
                       <h2 className="text-base font-bold">Highlights and requirements</h2>
                       {bullets.length > 0 && (
@@ -458,7 +582,7 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
                           {bullets.map((bullet, index) => <li key={index} className="flex gap-2"><CheckCircle2 className="mt-1 size-4 shrink-0 text-mint" />{text(bullet)}</li>)}
                         </ul>
                       )}
-                      {detailRequirements && <p className="mt-3 whitespace-pre-line text-base leading-7 text-muted-foreground">{detailRequirements}</p>}
+                      {effRequirements && <p className="mt-3 whitespace-pre-line text-base leading-7 text-muted-foreground">{effRequirements}</p>}
                     </section>
                   )}
                 </div>
@@ -489,17 +613,17 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
               <div className="max-w-3xl">
                 <div className="flex items-center gap-3 border-b pb-5">
                   <Building2 className="size-5 text-muted-foreground" />
-                  <div><h2 className="font-semibold">{text(deallsCompany.name) || text(companyProfile.name) || job.company}</h2><p className="text-sm text-muted-foreground">{text(deallsCompany.sector) || text(overview.industry) || "Industry not provided"}</p></div>
+                  <div><h2 className="font-semibold">{effCompanyName}</h2><p className="text-sm text-muted-foreground">{effIndustry || "Industry not provided"}</p></div>
                 </div>
                 <div className="grid gap-5 py-5 sm:grid-cols-3">
-                  <Fact icon={Building2} label="Company size" value={text(asRecord(overview.size).description) || (asRecord(deallsCompany.size).start ? `${String(asRecord(deallsCompany.size).start)}–${String(asRecord(deallsCompany.size).end || "+")}` : "")} />
+                  <Fact icon={Building2} label="Company size" value={effCompanySize || "Not provided"} />
                   <Fact icon={CheckCircle2} label="Reviews" value={rating.value ? `${String(rating.value)} / 5` : "Not provided"} />
-                  <Fact icon={ExternalLink} label="Website" value={text(deallsCompany.website) || text(asRecord(overview.website).url)} />
+                  <Fact icon={ExternalLink} label="Website" value={effWebsite || "Not provided"} />
                 </div>
                 <div className="border-t pt-5">
                   <h3 className="text-sm font-semibold">About the company</h3>
                   <div className="mt-3 grid gap-3 text-[15px] leading-7 text-foreground/80">
-                    {plainHtml(deallsCompany.description) ? <p>{plainHtml(deallsCompany.description)}</p> : profileParagraphs.length ? profileParagraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p className="text-muted-foreground">No company profile was returned for this listing.</p>}
+                    {effCompanyDesc}
                   </div>
                 </div>
               </div>
@@ -508,7 +632,7 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
             <TabsContent value="evidence" className="m-0 p-4 sm:p-6">
               <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground"><FileJson className="size-4" />Untouched source response used for audit and parser debugging</div>
               <pre className="overflow-x-auto rounded-md border bg-background p-4 font-mono text-xs leading-5 whitespace-pre-wrap break-words">
-                {evidence && Object.keys(evidence).length ? JSON.stringify(evidence, null, 2) : "No raw data available"}
+                {effEvidence && Object.keys(effEvidence).length ? JSON.stringify(effEvidence, null, 2) : "No raw data available"}
               </pre>
             </TabsContent>
           </div>
@@ -577,7 +701,7 @@ export default function Dashboard({ initialJobs }: DashboardProps) {
       </div>
 
       {visibleJobs.length ? (
-        <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {visibleJobs.map((job) => <ExploreJobCard key={`${job.source}-${job.sourceId || job.id}`} job={job} onOpen={() => setSelectedJob(job)} />)}
         </div>
       ) : initialJobs.length ? (

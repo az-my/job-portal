@@ -17,18 +17,38 @@ JOB_SEARCH_QUERY = """query searchJobsV3($data: JobSearchConditionInput!) {
     jobsInPage {
       id
       title
+      descriptionJsonString
+      workArrangementOption
       status
       createdAt
       updatedAt
+      isHot
+      isApplied
+      shouldShowSalary
+      educationLevel
       type
-      workArrangementOption
-      company { name logo __typename }
-      city { name __typename }
+      fraudReportFlag
+      bannerPic
+      benefits { benefit description logo title __typename }
+      city { id name __typename }
       country { code name __typename }
-      salaries { salaryType salaryMode maxAmount minAmount CurrencyCode __typename }
-      location { formattedName __typename }
-      hierarchicalJobCategory { name __typename }
-      skills { skill { name __typename } mustHave __typename }
+      salaries { id salaryType salaryMode maxAmount minAmount CurrencyCode __typename }
+      location { id name formattedName level __typename }
+      minYearsOfExperience
+      maxYearsOfExperience
+      source
+      jobSource
+      hierarchicalJobCategory { id level name __typename }
+      skills { skill { id name __typename } mustHave __typename }
+      company {
+        id name brandName logo status isVIP IndustryId
+        industry { id name __typename }
+        descriptionJsonString
+        website
+        size
+        verificationTier { type userName __typename }
+        __typename
+      }
       __typename
     }
     hasMore
