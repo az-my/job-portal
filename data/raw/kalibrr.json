@@ -1,0 +1,86 @@
+{
+  "correction_text_search": "",
+  "count": 1127,
+  "from_alternative": false,
+  "from_correction": false,
+  "jobs": [
+    {
+      "activation_date": "2026-07-10T09:50:17.480667+00:00",
+      "application_end_date": "2026-08-09T17:00:00+00:00",
+      "apply_redirect_url": "https://bit.ly/LamarCO",
+      "base_salary": 500000,
+      "bookmarked": false,
+      "company": {
+        "code": "btpn-syariah",
+        "description": "Pada 14 Juli 2014, BTPN Syariah resmi terdaftar sebagai Bank\nUmum Syariah ke-12 di Indonesia. Bank pertama di Indonesia yang melayani masyarakat pra-sejahtera, melalui pemberdayaan perempuan yang berbasis perbankan syariah.\nBank Syariah Swasta Terbaik dalam 8 tahun berturut-turut.",
+        "id": 26928,
+        "industry": "Banking / Mortgage",
+        "logo_small": "https://rec-data.kalibrr.com/www.kalibrr.com/logos/ZA4ZZHN8HQG5MW2QVK7JZJM7FLYGC6MECX8J22G4-6a4f7ba2.png",
+        "name": "BTPN Syariah",
+        "verified_business": true,
+        "visible": true
+      },
+      "company_info": {
+        "code": "btpn-syariah",
+        "description": "Pada 14 Juli 2014, BTPN Syariah resmi terdaftar sebagai Bank\nUmum Syariah ke-12 di Indonesia. Bank pertama di Indonesia yang melayani masyarakat pra-sejahtera, melalui pemberdayaan perempuan yang berbasis perbankan syariah.\nBank Syariah Swasta Terbaik dalam 8 tahun berturut-turut.",
+        "hidden": false,
+        "industry": "Banking / Mortgage",
+        "is_demo": false,
+        "logo": "https://rec-data.kalibrr.com/www.kalibrr.com/logos/C62A3JQ2RJPB4WER5FPTZUJWNT4VE83FC43828G3-6a4f7ba2.png",
+        "logo_1200x630": "https://rec-data.kalibrr.com/www.kalibrr.com/logos/ARLW5WYTWU9VYK2JB5ZPWMX2JLRK9T7M3TR2U5RG-6a4f7ba5.png",
+        "logo_160x90": "https://rec-data.kalibrr.com/www.kalibrr.com/logos/Q8ARFMR3W3ZGRPKUGUKBSN2ZRK2WPH56DPEEP8NZ-6a4f7ba5.png",
+        "logo_small": "https://rec-data.kalibrr.com/www.kalibrr.com/logos/ZA4ZZHN8HQG5MW2QVK7JZJM7FLYGC6MECX8J22G4-6a4f7ba2.png",
+        "name": "BTPN Syariah",
+        "url": "https://www.btpnsyariah.com/"
+      },
+      "company_name": "BTPN Syariah",
+      "created_at": "2026-07-10T09:49:10.019050+00:00",
+      "description": "<p>Deskripsi Pekerjaan:</p>\n\n<p>1. Tenaga profesional yang mengunjungi dan membina para perempuan prasejahtera di daerah sesuai penempatan untuk memberikan pendampingan usaha serta literasi keuangan;</p>\n\n<p>2. Mengajarkan pengelolaan keuangan sederhana, disiplin menabung, dan memastikan cicilan berjalan lancar;</p>\n\n<p>3. Memberikan modal usaha kepada nasabah dengan sistem pembiayaan kelompok tanpa agunan;</p>\n\n<p>4. Mendengarkan kebutuhan nasabah dan memberikan solusi terbaik.</p>",
+      "distance_from_user": null,
+      "education_level": 200,
+      "es_is_top_brand": false,
+      "es_recruiter_last_seen": "2026-07-10T11:09:03.687238+00:00",
+      "exam_versions": [],
+      "function": "Sales and Marketing",
+      "google_location": {
+        "address_components": {
+          "address_line_1": "63, Jalan Jaksa Agung Suprapto, Samaan Kel., Klojen",
+          "city": "Malang Kota",
+          "country": "Indonesia",
+          "region": "Jawa Timur"
+        }
+      },
+      "id": 269705,
+      "is_featured": false,
+      "is_hybrid": false,
+      "is_open_to_fresh_grads": true,
+      "is_work_from_home": false,
+      "job_sds_skills": [],
+      "maximum_salary": 6000000,
+      "name": "Community Officer Pasuruan",
+      "number_of_openings": 100,
+      "perks": {
+        "other": null,
+        "types": [
+          "perf_bonus",
+          "housing",
+          "trans",
+          "med_ins",
+          "paid_holidays"
+        ]
+      },
+      "photo_urls": [],
+      "priority_score": 0.5,
+      "qualifications": "<p>Persyaratan:</p>\n\n<p>1. Perempuan</p>\n\n<p>2. Usia 18 - 33 tahun</p>\n\n<p>3. Pendidikan min SMA/SMK Sederajat, D3, hingga S1</p>\n\n<p>4. Senang bersosialisasi dan bertemu banyak orang</p>\n\n<p>Benefit:</p>\n\n<p>1. Gaji Pokok UMP</p>\n\n<p>2. THR 2x Gaji Pokok</p>\n\n<p>3. Insentif</p>\n\n<p>4. Jaminan Kesehatan</p>\n\n<p>5. Wisma/Mess</p>\n\n<p>6. Motor Manual</p>\n\n<p>7. Program beasiswa sarjana S1</p>\n\n<p>8. Hadiah perjalanan ke luar negeri</p>\n\n<p>9. Berkesempatan ibadah Umroh</p>",
+      "response_rate": null,
+      "salary_currency": "IDR",
+      "salary_interval": "month",
+      "salary_shown": true,
+      "slug": "community-officer-pasuruan",
+      "tenure": "Full time",
+      "visibility": "public",
+      "work_experience": 200
+    }
+  ],
+  "search_text": ""
+}

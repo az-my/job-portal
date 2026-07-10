@@ -39,8 +39,8 @@ export const SOURCE_INTEL: SourceIntel[] = [
     ],
     limitations: [
       'Unofficial internal schema (shared with SEEK) — can change without notice.',
-      'No salary min/max fields exposed in search results, only the free-text salaryLabel (often empty).',
-      'No company logo in search results.',
+      'No salary min/max fields exposed in search results, only the free-text salaryLabel (often empty). We parse bounds when that public label contains an IDR range.',
+      'Search results expose teaser/bullets rather than the full job-ad description. Full descriptions require a separate per-job details request.',
     ],
     gotchas: [
       'Two error modes: schema mistakes return HTTP 400 with real GraphQL validation messages; runtime failures return HTTP 200 with an opaque errors array ("An error occurred") — usually a missing header, not a bad query.',
@@ -53,9 +53,11 @@ export const SOURCE_INTEL: SourceIntel[] = [
       ['locations[].label', 'location'],
       ['workTypes[0]', 'type (Full time → full-time, Contract/Temp → contract, Casual/Vacation → part-time)'],
       ['bulletPoints', 'description'],
+      ['teaser', 'description fallback'],
       ['salaryLabel', 'salary (free text)'],
       ['listingDate.dateTimeUtc', 'createdAt'],
       ['classifications[].classification.description', 'requirements'],
+      ['branding.serpLogoUrl', 'logoUrl'],
     ],
   },
   {

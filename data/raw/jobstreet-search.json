@@ -1,0 +1,81 @@
+{
+  "data": {
+    "jobSearchV6": {
+      "totalCount": 58470,
+      "data": [
+        {
+          "id": "93258557",
+          "title": "Content Writer & Copywriter (English Required | Mandarin is a Plus)",
+          "teaser": "Craft engaging and meaningful content with creativity and empathy that informs, inspires, and connects with audiences.",
+          "advertiser": {
+            "id": "61560799",
+            "description": "Pet To Nature Indonesia",
+            "__typename": "JobSearchV6Advertiser"
+          },
+          "branding": {
+            "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/6cd80113-3742-4510-8e98-15bca084cdcd.2/jdpLogo",
+            "__typename": "JobSearchV6Branding"
+          },
+          "companyName": "Pet To Nature",
+          "currencyLabel": null,
+          "employer": {
+            "id": "622215",
+            "name": "Pet To Nature",
+            "companyId": "168555236488788",
+            "companyUrl": "https://id.jobstreet.com/companies/pet-to-nature-168555236488788",
+            "__typename": "JobSearchV6Employer"
+          },
+          "bulletPoints": [],
+          "salaryLabel": "Rp 5.500.000 – Rp 6.500.000 per month",
+          "listingDate": {
+            "dateTimeUtc": "2026-07-10T14:43:43.000Z",
+            "__typename": "SeekDateTime"
+          },
+          "locations": [
+            {
+              "label": "Jakarta Barat, Jakarta Raya",
+              "countryCode": "ID",
+              "seoHierarchy": [
+                {
+                  "contextualName": "Jakarta Barat Jakarta Raya",
+                  "__typename": "JobSearchV6SeoHierarchy"
+                },
+                {
+                  "contextualName": "Jakarta Raya",
+                  "__typename": "JobSearchV6SeoHierarchy"
+                }
+              ],
+              "__typename": "JobSearchV6DataLocation"
+            }
+          ],
+          "roleId": "content-writer",
+          "tags": [
+            {
+              "label": "Jadilah pelamar pertama",
+              "type": "EARLY_APPLICANT",
+              "__typename": "JobSearchV6DataTag"
+            }
+          ],
+          "workArrangements": {
+            "displayText": null,
+            "__typename": "JobSearchV6WorkArrangements"
+          },
+          "workTypes": [
+            "Full time"
+          ],
+          "classifications": [
+            {
+              "classification": {
+                "description": "Pemasaran & Komunikasi",
+                "__typename": "JobSearchV6ClassificationDetail"
+              },
+              "__typename": "JobSearchV6Classification"
+            }
+          ],
+          "__typename": "JobSearchV6Data"
+        }
+      ],
+      "__typename": "SearchV6Result"
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "data": {
+    "docs": [
+      {
+        "id": "6a50c3c8a2cee400123740b8",
+        "slug": "staff-sales-5",
+        "role": "Staff Sales",
+        "authorId": "66cc36dd3100640013d92d2f",
+        "stats": {
+          "viewCount": 0,
+          "nonCuratedCount": 0,
+          "applicantCount": 0
+        },
+        "employmentTypes": [
+          "fullTime"
+        ],
+        "workplaceType": "onSite",
+        "publishedAt": "2026-07-10T12:56:18.354Z",
+        "status": "active",
+        "salaryType": "paid",
+        "salaryRange": null,
+        "candidatePreference": {
+          "minimumGpa": null,
+          "major": null,
+          "skillIds": [
+            "637cf99895712d001232f792",
+            "67faa6825e477923f999c8fa",
+            "6808639fdf0e263abf7c9023",
+            "63d0f653a0bdc500125c4a9f"
+          ],
+          "university": null,
+          "lastEducations": [
+            0
+          ]
+        },
+        "country": {
+          "name": "Indonesia",
+          "id": 102
+        },
+        "city": {
+          "name": "Jakarta Pusat",
+          "id": 157
+        },
+        "companyId": "66cc377b6067dc00126b353c",
+        "categoryId": null,
+        "categorySlug": null,
+        "jobRoleCategorySlug": "business-sales-and-commercial",
+        "jobRoleId": "69393fb7ffb8a421e1efbbca",
+        "jobRoleCategoryId": "6934fd0b2622eadf60779984",
+        "jobRoleSubCategoryId": "69393fb7ffb8a421e1efbbc7",
+        "company": {
+          "insight": {
+            "benefits": [
+              "competitiveSalary",
+              "bonusSystem",
+              "medicalLeave"
+            ],
+            "workingPolicies": [
+              "onSite"
+            ],
+            "fundingStage": null,
+            "fundingAmount": null
+          },
+          "createdAt": "2024-08-26T08:06:19.379Z",
+          "name": "Trafoindo Group",
+          "rank": "C",
+          "trialStartedAt": "2024-08-26T08:07:17.559Z",
+          "id": "66cc377b6067dc00126b353c",
+          "sector": "Electrical Equipment Manufacturing",
+          "slug": "pt-trafoindo-prima-perkasa-group-1",
+          "logoUrl": "https://cdn.sejutacita.id/66cc36dd3100640013d92d2f/JobPortalCompanyLogo/5e57f4da-5356-49cb-803b-6ff99844183a.jpeg",
+          "verified": true
+        },
+        "skills": [
+          {
+            "name": "Sales Strategy",
+            "id": "637cf99895712d001232f792"
+          },
+          {
+            "name": "Strong analytical thinking",
+            "id": "67faa6825e477923f999c8fa"
+          },
+          {
+            "name": "Highly Motivated",
+            "id": "6808639fdf0e263abf7c9023"
+          },
+          {
+            "name": "Attention To Details",
+            "id": "63d0f653a0bdc500125c4a9f"
+          }
+        ],
+        "deletedAt": null,
+        "author": {
+          "name": "Rindu",
+          "id": "66cc377b6067dc00126b3544",
+          "email": "recruitment@trafoindonesia.com"
+        },
+        "qCompanyRank": null,
+        "createdAt": "2026-07-10T10:04:56.294Z",
+        "updatedAt": "2026-07-10T12:56:19.932Z",
+        "updatedAtByEmployer": "2026-07-10T12:56:18.354Z",
+        "latestUpdatedAt": "2026-07-10T10:04:56.288Z",
+        "urgentlyNeeded": false,
+        "externalPlatformApplyUrl": null,
+        "boosted": false,
+        "_score": 0,
+        "saved": false,
+        "applied": false,
+        "waitListed": false,
+        "applicantPrioritySlots": 8,
+        "higherSalary": null,
+        "eligibleToApply": true,
+        "thereAreStillFewApplicants": true,
+        "lastActivelyHiringAt": "2026-07-10T12:56:21.574Z"
+      }
+    ],
+    "totalDocs": 1415,
+    "totalPages": 1415,
+    "page": 1
+  },
+  "code": 200
+}

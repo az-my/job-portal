@@ -1,0 +1,141 @@
+{
+  "data": {
+    "jobDetails": {
+      "job": {
+        "sourceZone": "asia-4",
+        "id": "93258557",
+        "title": "Content Writer & Copywriter (English Required | Mandarin is a Plus)",
+        "abstract": "Craft engaging and meaningful content with creativity and empathy that informs, inspires, and connects with audiences.",
+        "content2": "<h2>About the Role</h2><p>We are looking for a creative and detail-oriented Content Writer &amp; Copywriter to create compelling content for our social media, website, marketing campaigns, and digital platforms.</p><p>The ideal candidate is someone who enjoys storytelling, understands digital marketing, and knows how to write content that informs, engages, and inspires audiences. This role requires excellent English writing skills and the ability to adapt writing styles for different platforms and target audiences.</p><hr><h2>Responsibilities</h2><ul><li><p>Write engaging captions for Instagram, Facebook, TikTok, LinkedIn, and other social media platforms</p></li><li><p>Develop compelling marketing copy for advertisements, websites, landing pages, brochures, and email campaigns</p></li><li><p>Research industry trends and transform complex topics into easy-to-understand content</p></li><li><p>Create educational, promotional, and storytelling content</p></li><li><p>Collaborate with the marketing, design, and video teams to produce integrated campaigns</p></li><li><p>Ensure all content aligns with the company's brand voice and communication style</p></li><li><p>Proofread and edit content before publication</p></li><li><p>Generate creative campaign ideas and content calendars</p></li><li><p>Assist in developing scripts for short-form and long-form videos</p></li><li><p>Optimize content for SEO and audience engagement</p></li></ul><hr><h2>Requirements</h2><h2>Must Have</h2><ul><li><p>Minimum 2 years of experience in copywriting, content writing, journalism, communications, marketing, or a related field</p></li><li><p>Excellent English writing skills (grammar, spelling, and style)</p></li><li><p>Strong research and storytelling abilities</p></li><li><p>Creative mindset with attention to detail</p></li><li><p>Able to adapt writing tone for different audiences</p></li><li><p>Familiar with social media trends and digital marketing</p></li><li><p>Responsible, proactive, and able to work independently</p></li><li><p>Able to meet deadlines consistently</p></li></ul><hr><h2>Nice to Have</h2><ul><li><p>Mandarin language skills</p></li><li><p>Experience writing for international audiences</p></li><li><p>Basic SEO knowledge</p></li><li><p>Experience using AI writing tools such as ChatGPT, Claude, Gemini, or similar</p></li><li><p>Experience writing video scripts</p></li><li><p>Experience in healthcare, pet care, lifestyle, or premium service industries</p></li><li><p>Basic graphic design knowledge is a plus</p></li></ul><hr><h2>What We're Looking For</h2><p>The ideal candidate is someone who:</p><ul><li><p>Loves writing and continuous learning</p></li><li><p>Thinks from the customer's perspective</p></li><li><p>Can transform ideas into persuasive and engaging content</p></li><li><p>Has strong critical thinking and research skills</p></li><li><p>Pays attention to details while maintaining creativity</p></li><li><p>Is open to feedback and continuous improvement</p></li><li><p>Enjoys working collaboratively with creative teams</p></li><li><p>Empathetic and emotionally intelligent</p></li></ul><hr><h2></h2><p><br></p>",
+        "status": "Active",
+        "isExpired": false,
+        "isLinkOut": false,
+        "isVerified": true,
+        "expiresAt": {
+          "dateTimeUtc": "2026-08-10T13:59:59.999Z",
+          "__typename": "SeekDateTime"
+        },
+        "listedAt": {
+          "dateTimeUtc": "2026-07-10T14:43:43.799Z",
+          "__typename": "SeekDateTime"
+        },
+        "salary": {
+          "currencyLabel": null,
+          "label": "Rp 5.500.000 – Rp 6.500.000 per month",
+          "__typename": "JobSalary"
+        },
+        "workTypes": {
+          "label": "Full time",
+          "__typename": "JobWorkTypes"
+        },
+        "advertiser": {
+          "id": "61560799",
+          "name": "Pet To Nature Indonesia",
+          "isVerified": true,
+          "registrationDate": {
+            "dateTimeUtc": "2023-01-26T10:08:30.913Z",
+            "__typename": "SeekDateTime"
+          },
+          "__typename": "Advertiser"
+        },
+        "location": {
+          "label": "Jakarta Barat, Jakarta Raya",
+          "__typename": "LocationInfo"
+        },
+        "classifications": [
+          {
+            "label": "Pemasaran Digital & Pencarian (Pemasaran & Komunikasi)",
+            "__typename": "ClassificationInfo"
+          }
+        ],
+        "products": {
+          "bullets": null,
+          "branding": {
+            "id": "6cd80113-3742-4510-8e98-15bca084cdcd.2",
+            "cover": null,
+            "thumbnailCover": null,
+            "logo": {
+              "url": "https://image-service-cdn.seek.com.au/8cc550ca00067564c804482037e92d9b72efdfa3/ee4dce1061f3f616224767ad58cb2fc751b8d2dc",
+              "__typename": "JobProductBrandingImage"
+            },
+            "__typename": "JobProductBranding"
+          },
+          "questionnaire": {
+            "questions": [
+              "Which of the following types of qualifications do you have?",
+              "How many years' experience do you have as a Content Writer?",
+              "Which of the following languages are you fluent in?",
+              "Do you have experience with Search Engine Optimisation (SEO)?",
+              "Are you experienced with copy writing and content creation?",
+              "How many years' experience do you have in digital marketing?",
+              "How would you rate your English language skills?"
+            ],
+            "__typename": "JobQuestionnaire"
+          },
+          "video": null,
+          "__typename": "JobProducts"
+        },
+        "__typename": "Job"
+      },
+      "workArrangements": {
+        "arrangements": [
+          {
+            "type": "ONSITE",
+            "label": "Kantor",
+            "__typename": "JobDetailsWorkArrangement"
+          }
+        ],
+        "label": "",
+        "__typename": "JobDetailsWorkArrangements"
+      },
+      "seoInfo": {
+        "normalisedRoleTitle": "Content Writer",
+        "workType": "242",
+        "classification": [
+          "6008"
+        ],
+        "subClassification": [
+          "6010"
+        ],
+        "where": "West Jakarta Jakarta",
+        "broaderLocationName": "Jakarta Barat",
+        "normalisedOrganisationName": "Pet To Nature",
+        "__typename": "SEOInfo"
+      },
+      "companyProfile": {
+        "id": "168555236488788",
+        "name": "Pet To Nature",
+        "companyNameSlug": "pet-to-nature-168555236488788",
+        "shouldDisplayReviews": true,
+        "branding": {
+          "logo": "https://image-service-cdn.seek.com.au/ceb8e8a91ebdfce118cb30e31b3c0f363dee3a24",
+          "__typename": "Branding"
+        },
+        "overview": {
+          "description": {
+            "paragraphs": [
+              "We are a multinational company that focus in pet industry. In this industry we thrive to give the best experience for pets and pets' owner as our valuable client. In the meantime we also want to make not only our client but also our co worker to feel at home, so they can expand their ideas and creativity to their maximum capacity."
+            ],
+            "__typename": "Description"
+          },
+          "industry": "Services",
+          "size": {
+            "description": "Not specified",
+            "__typename": "CompanySize"
+          },
+          "website": {
+            "url": "https://www.instagram.com/pettonatureindonesia/",
+            "__typename": "Website"
+          },
+          "__typename": "Overview"
+        },
+        "reviewsSummary": null,
+        "perksAndBenefits": [],
+        "__typename": "CompanyProfile"
+      },
+      "companySearchUrl": "https://id.jobstreet.com/id/Pet-To-Nature-jobs/at-this-company",
+      "companyTags": [],
+      "__typename": "JobDetails"
+    }
+  }
+}

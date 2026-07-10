@@ -33,6 +33,16 @@ interface DataTableProps<TData, TValue> {
   searchKey?: string
   searchPlaceholder?: string
   pageSize?: number
+  emptyMessage?: string
+}
+
+function responsiveColumnClass(columnId: string): string {
+  if (columnId === "workSetup") return "hidden md:table-cell"
+  if (columnId === "location") return "hidden lg:table-cell"
+  if (columnId === "signals") return "hidden xl:table-cell"
+  if (columnId === "source") return "hidden sm:table-cell"
+  if (columnId === "createdAt") return "hidden lg:table-cell"
+  return ""
 }
 
 export function DataTable<TData, TValue>({
@@ -41,6 +51,7 @@ export function DataTable<TData, TValue>({
   searchKey,
   searchPlaceholder = "Search...",
   pageSize = 10,
+  emptyMessage = "No matching records.",
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -76,16 +87,19 @@ export function DataTable<TData, TValue>({
           <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={searchPlaceholder}
-            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-            onChange={(e) => table.getColumn(searchKey)?.setFilterValue(e.target.value)}
-            className="h-9 max-w-sm rounded-full border-border/70 bg-background/50 pl-8 text-sm transition-shadow focus-visible:shadow-[0_0_0_3px_var(--ring)]"
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            aria-label="Search jobs"
+            className="h-11 max-w-xl bg-background pl-9 pr-10 text-base"
           />
-          {!!table.getColumn(searchKey)?.getFilterValue() && (
+          {!!globalFilter && (
             <Button
               variant="ghost"
-              size="sm"
-              onClick={() => table.getColumn(searchKey)?.setFilterValue("")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              size="icon-sm"
+              onClick={() => setGlobalFilter("")}
+              aria-label="Clear search"
+              title="Clear search"
+              className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <X className="size-4" />
             </Button>
@@ -94,12 +108,15 @@ export function DataTable<TData, TValue>({
       )}
 
       <div className="overflow-hidden rounded-lg border border-border/60">
-        <Table>
+        <Table className="text-base">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead
+                    key={header.id}
+                    className={responsiveColumnClass(header.column.id)}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -113,7 +130,10 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className="transition-colors hover:bg-accent/40">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      className={responsiveColumnClass(cell.column.id)}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -121,8 +141,8 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                  No results.
+                <TableCell colSpan={columns.length} className="h-36 text-center text-muted-foreground">
+                  {emptyMessage}
                 </TableCell>
               </TableRow>
             )}
@@ -131,8 +151,8 @@ export function DataTable<TData, TValue>({
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} row{table.getFilteredRowModel().rows.length !== 1 ? "s" : ""}
+        <p className="text-[15px] text-muted-foreground">
+          {table.getFilteredRowModel().rows.length} listing{table.getFilteredRowModel().rows.length !== 1 ? "s" : ""}
         </p>
         <div className="flex items-center gap-2">
           <Button
@@ -140,6 +160,8 @@ export function DataTable<TData, TValue>({
             size="sm"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
+            aria-label="First page"
+            title="First page"
           >
             <ChevronsLeft className="size-4" />
           </Button>
@@ -148,17 +170,21 @@ export function DataTable<TData, TValue>({
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
+            aria-label="Previous page"
+            title="Previous page"
           >
             <ChevronLeft className="size-4" />
           </Button>
-          <span className="text-sm text-muted-foreground tabular-nums">
-            {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
+          <span className="text-[15px] font-medium text-muted-foreground tabular-nums">
+            Page {table.getPageCount() ? table.getState().pagination.pageIndex + 1 : 0} of {table.getPageCount()}
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
+            aria-label="Next page"
+            title="Next page"
           >
             <ChevronRight className="size-4" />
           </Button>
@@ -167,6 +193,8 @@ export function DataTable<TData, TValue>({
             size="sm"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
+            aria-label="Last page"
+            title="Last page"
           >
             <ChevronsRight className="size-4" />
           </Button>

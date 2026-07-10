@@ -1,0 +1,108 @@
+{
+  "data": {
+    "searchJobsV3": {
+      "__typename": "JobSearchResults",
+      "hasMore": true,
+      "jobsInPage": [
+        {
+          "__typename": "Job",
+          "city": null,
+          "company": {
+            "__typename": "Company",
+            "logo": "d62461f29cbe7542d63ffcc0b1db9ab7.jpg",
+            "name": "D'Real Corporation"
+          },
+          "country": {
+            "__typename": "Country",
+            "code": "ID",
+            "name": "Indonesia"
+          },
+          "createdAt": "2026-07-10T14:44:37.248Z",
+          "hierarchicalJobCategory": {
+            "__typename": "HierarchicalJobCategory",
+            "name": "Store Crew"
+          },
+          "id": "ff545a79-bfec-487a-8c79-24d4396105f8",
+          "location": {
+            "__typename": "HierarchicalLocation",
+            "formattedName": "Dramaga"
+          },
+          "salaries": [
+            {
+              "CurrencyCode": "IDR",
+              "__typename": "JobSalary",
+              "maxAmount": 1700000,
+              "minAmount": 1600000,
+              "salaryMode": "MONTH",
+              "salaryType": "BASIC"
+            }
+          ],
+          "skills": [
+            {
+              "__typename": "Skill",
+              "mustHave": true,
+              "skill": {
+                "__typename": "SkillDetail",
+                "name": "Administration"
+              }
+            },
+            {
+              "__typename": "Skill",
+              "mustHave": true,
+              "skill": {
+                "__typename": "SkillDetail",
+                "name": "Customer Service"
+              }
+            },
+            {
+              "__typename": "Skill",
+              "mustHave": true,
+              "skill": {
+                "__typename": "SkillDetail",
+                "name": "Store Display"
+              }
+            },
+            {
+              "__typename": "Skill",
+              "mustHave": true,
+              "skill": {
+                "__typename": "SkillDetail",
+                "name": "Store Sales"
+              }
+            },
+            {
+              "__typename": "Skill",
+              "mustHave": true,
+              "skill": {
+                "__typename": "SkillDetail",
+                "name": "Store Operations"
+              }
+            },
+            {
+              "__typename": "Skill",
+              "mustHave": true,
+              "skill": {
+                "__typename": "SkillDetail",
+                "name": "Microsoft Excel"
+              }
+            },
+            {
+              "__typename": "Skill",
+              "mustHave": true,
+              "skill": {
+                "__typename": "SkillDetail",
+                "name": "Cashier"
+              }
+            }
+          ],
+          "status": "OPEN",
+          "title": "Crew Satelit Warung Bebek",
+          "type": "FULL_TIME",
+          "updatedAt": "2026-07-10T14:44:37.248Z",
+          "workArrangementOption": "ONSITE"
+        }
+      ]
+    }
+  },
+  "isAuthenticated": false
+}

@@ -82,18 +82,41 @@ JOBSTREET_WORK_TYPE_MAP = {
 
 
 def normalize_jobstreet(item):
+    details = item.get("_details") or {}
+    detail_job = details.get("job") or {}
+    detail_company = details.get("companyProfile") or {}
+
     bullet_points = item.get("bulletPoints")
     if isinstance(bullet_points, list):
         description = "\n".join(bullet_points)
     else:
         description = bullet_points or ""
 
+    # Search results expose a teaser, not the full job-ad description.
+    teaser = item.get("teaser") or ""
+
+    full_description = _strip_html(detail_job.get("content2"))
+    abstract = detail_job.get("abstract") or ""
+
     advertiser = item.get("advertiser") or {}
+    employer = item.get("employer") or {}
+    branding = item.get("branding") or {}
+    detail_advertiser = detail_job.get("advertiser") or {}
+    detail_products = detail_job.get("products") or {}
+    detail_branding = detail_products.get("branding") or {}
 
     locations = item.get("locations") or []
     location = ", ".join(l.get("label", "") for l in locations if l.get("label"))
+    detail_location = (detail_job.get("location") or {}).get("label")
 
     work_types = item.get("workTypes") or []
+    detail_work_types = detail_job.get("workTypes") or []
+    if detail_work_types:
+        work_types = [
+            w.get("label", "") if isinstance(w, dict) else str(w)
+            for w in detail_work_types
+            if (w.get("label") if isinstance(w, dict) else w)
+        ]
     job_type = JOBSTREET_WORK_TYPE_MAP.get((work_types[0] if work_types else "").lower(), "full-time")
 
     classifications = item.get("classifications") or []
@@ -104,25 +127,35 @@ def normalize_jobstreet(item):
     )
 
     listing_date = (item.get("listingDate") or {}).get("dateTimeUtc")
+    detail_listing_date = (detail_job.get("listedAt") or {}).get("dateTimeUtc")
+    detail_salary = (detail_job.get("salary") or {}).get("label")
+    detail_logo = (detail_branding.get("logo") or {}).get("url")
+
+    questions = (detail_products.get("questionnaire") or {}).get("questions") or []
+    detail_classifications = detail_job.get("classifications") or []
+    requirements = "\n".join(
+        [str(q) for q in questions if q]
+        or [c.get("label", "") for c in detail_classifications if c.get("label")]
+    )
 
     job = {
         "id": generate_id("job"),
-        "title": item.get("title") or "Untitled",
-        "company": advertiser.get("description") or "Unknown Company",
-        "location": location,
+        "title": detail_job.get("title") or item.get("title") or "Untitled",
+        "company": detail_company.get("name") or detail_advertiser.get("name") or item.get("companyName") or employer.get("name") or advertiser.get("description") or "Unknown Company",
+        "location": detail_location or location,
         "type": job_type,
-        "description": description or classification,
-        "salary": item.get("salaryLabel") or "",
-        "createdAt": listing_date or _now_iso(),
+        "description": full_description or description or abstract or teaser or classification,
+        "salary": detail_salary or item.get("salaryLabel") or "",
+        "createdAt": detail_listing_date or listing_date or _now_iso(),
         "source": "jobstreet",
         "sourceId": str(item.get("id")),
         "url": f"https://id.jobstreet.com/jobs/{item.get('id')}",
-        "logoUrl": "",
+        "logoUrl": detail_logo or (detail_company.get("branding") or {}).get("logo") or branding.get("serpLogoUrl") or "",
         "raw": json.dumps(item, ensure_ascii=False),
     }
-    if classification:
-        job["requirements"] = classification
-    _set_salary_bounds(job, *_parse_salary_label(item.get("salaryLabel")))
+    if requirements or classification:
+        job["requirements"] = requirements or classification
+    _set_salary_bounds(job, *_parse_salary_label(job["salary"]))
     return job
 
 

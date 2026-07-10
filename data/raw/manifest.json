@@ -1,0 +1,36 @@
+{
+  "capturedAt": "2026-07-10T14:46:28.000Z",
+  "purpose": "Unmodified representative JSON response bodies for cross-portal schema analysis",
+  "files": {
+    "jobstreet-search.json": {
+      "method": "POST",
+      "operation": "JobSearchV6",
+      "page": 1,
+      "pageSize": 1
+    },
+    "jobstreet-detail.json": {
+      "method": "POST",
+      "operation": "JobDetailsEnrichment",
+      "sourceId": "93258557"
+    },
+    "dealls.json": {
+      "method": "GET",
+      "page": 1,
+      "limit": 1,
+      "status": "active"
+    },
+    "kalibrr.json": {
+      "method": "GET",
+      "offset": 0,
+      "limit": 1,
+      "sort": "Freshness"
+    },
+    "glints.json": {
+      "method": "POST",
+      "operation": "searchJobsV3",
+      "page": 1,
+      "pageSize": 1
+    }
+  },
+  "warning": "Raw responses may contain public recruiter or author metadata. Review before publishing outside this repository."
+}

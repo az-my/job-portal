@@ -37,7 +37,7 @@ JOB_SEARCH_QUERY = """query searchJobsV3($data: JobSearchConditionInput!) {
 }"""
 
 
-def _fetch_page(page, page_size=50):
+def _fetch_page(page, page_size=50, return_payload=False):
     body = json.dumps({
         "operationName": "searchJobsV3",
         "variables": {"data": {
@@ -74,7 +74,7 @@ def _fetch_page(page, page_size=50):
     if not isinstance(result, dict) or not isinstance(result.get("jobsInPage"), list):
         raise RuntimeError(f"Glints API unexpected response shape: {str(payload)[:200]}")
 
-    return result
+    return payload if return_payload else result
 
 
 def collect_jobs(max_pages=5, page_size=50):
