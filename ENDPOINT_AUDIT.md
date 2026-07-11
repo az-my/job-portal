@@ -220,15 +220,12 @@ security headers.
 
 ## Local Next.js Routes
 
-The application has two route handlers:
+The application has one documented route handler:
 
-- `GET /query/api?q=...`: missing/blank `q` returns HTTP 400 with
+- `GET /api/query?q=...`: missing/blank `q` returns HTTP 400 with
   `{ "error": "Missing ?q=" }`. A configured Gemini + Supabase path returns
   `{ q, mode: "sql", sql, count, rows }`; otherwise it returns
   `{ q, mode: "fallback", llmError, count, jobs }`.
-- `GET /dataset/export?format=csv|json`: returns the normalized dataset as an
-  attachment. Missing or unknown `format` returns JSON; only the exact value `csv`
-  selects CSV.
 
 Per the bundled Next.js 16.2.9 documentation, route handlers are not cached by
 default and unsupported methods receive HTTP 405.

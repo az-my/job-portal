@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { BookOpen } from "lucide-react";
 
@@ -111,11 +110,7 @@ export default function WikiPage() {
         }
         description={
           <>
-            How this thing works and why it is built this way. Per-endpoint API detail lives in{" "}
-            <Link href="/sources" className="text-primary underline underline-offset-2 hover:text-foreground">
-              Sources
-            </Link>
-            ; repo docs in README.md / ABOUT.md.
+            How this thing works and why it is built this way. Repo docs live in README.md / ABOUT.md.
           </>
         }
       />

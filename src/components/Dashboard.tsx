@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { SourceBadge } from "@/components/SourceBadge";
 import { sourceColor, sourceLabel } from "@/lib/sources";
 import type { Job } from "@/lib/db";
@@ -31,6 +30,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { QueryBuilder, type QueryResponse } from "@/components/QueryBuilder";
+import { AdminDataTable, jobToAdminRow } from "@/components/JobsAdminTable";
 
 interface DashboardProps {
   initialJobs: Job[];
@@ -207,116 +208,66 @@ function exploreMeta(job: Job): ExploreMeta {
   return { workSetup: [humanize(job.type)], category: "", highlights: [], signals: [], verified: false, sponsored: false };
 }
 
-function ExploreJobCard({ job, onOpen }: { job: Job; onOpen: () => void }) {
-  const meta = exploreMeta(job);
-  const sourceHue = sourceColor(job.source);
-
-  return (
-    <Card
-      className="gap-0 border-t-4 transition-colors hover:bg-muted/20"
-      style={{ borderTopColor: sourceHue }}
-    >
-      <CardHeader className="gap-2 px-4 pb-3 pt-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2.5">
-            {job.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={job.logoUrl} alt="" className="size-9 shrink-0 rounded-lg border bg-white object-contain p-1" loading="lazy" />
-            ) : (
-              <span className="grid size-9 shrink-0 place-items-center rounded-lg text-sm font-bold" style={{ color: sourceHue, background: `color-mix(in srgb, ${sourceHue} 12%, transparent)` }}>
-                {job.company.slice(0, 1).toUpperCase()}
-              </span>
-            )}
-            <div className="min-w-0">
-              <p className="flex items-center gap-1 truncate text-sm font-bold">
-                <span className="truncate">{job.company}</span>
-                {meta.verified && <CheckCircle2 className="size-3.5 shrink-0 text-mint" aria-label="Verified company" />}
-              </p>
-            </div>
-          </div>
-          <div className="flex shrink-0 flex-wrap justify-end gap-1">
-            {meta.sponsored && <span className="text-xs font-semibold text-mint">Sponsored</span>}
-            <SourceBadge source={job.source} />
-          </div>
-        </div>
-
-        <CardTitle className="text-base font-bold leading-snug">
-          <button type="button" onClick={onOpen} className="cursor-pointer text-left outline-none hover:text-primary focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring/50">
-            {job.title}
-          </button>
-        </CardTitle>
-        {meta.category && <p className="text-xs font-medium text-muted-foreground">{meta.category}</p>}
-      </CardHeader>
-
-      <CardContent className="flex flex-1 flex-col gap-2 px-4 pb-4">
-        <div className="grid gap-1.5 text-sm">
-          <div className="flex items-start gap-2 text-muted-foreground">
-            <MapPin className="mt-0.5 size-3.5 shrink-0" />
-            <span className="line-clamp-1">{job.location || "Location not provided"}</span>
-          </div>
-          <div className="flex items-start gap-2 text-muted-foreground">
-            <BriefcaseBusiness className="mt-0.5 size-3.5 shrink-0" />
-            <span>{meta.workSetup.join(" · ") || humanize(job.type)}</span>
-          </div>
-        </div>
-
-        <p className="line-clamp-2 text-sm leading-relaxed text-foreground/75">
-          {job.description || "No description available."}
-        </p>
-
-        <div className="mt-auto flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1"><CalendarClock className="size-3" />{timeAgo(job.createdAt)}</span>
-        </div>
-
-        <div className="border-t pt-2.5">
-          <p className={`text-sm font-bold ${job.salary ? "font-mono text-mint" : "text-foreground"}`}>
-            {job.salary || "Salary not disclosed"}
-          </p>
-        </div>
-      </CardContent>
-
-      <CardFooter className="justify-between gap-2 bg-muted/35 px-4 py-2.5 text-xs">
-        <Button variant="outline" size="sm" onClick={onOpen}>View details</Button>
-        {job.url && (
-          <Button
-            variant="ghost"
-            size="sm"
-            render={<a href={job.url} target="_blank" rel="noopener noreferrer" />}
-            nativeButton={false}
-          >
-            Open listing <ExternalLink className="size-3.5" />
-          </Button>
-        )}
-      </CardFooter>
-    </Card>
-  );
-}
-
-function SourceSummary({ jobs }: { jobs: Job[] }) {
+function ListingsToolbar({
+  jobs,
+  sourceFilter,
+  onSourceChange,
+  query,
+  onQueryChange,
+}: {
+  jobs: Job[];
+  sourceFilter: string;
+  onSourceChange: (source: string) => void;
+  query: string;
+  onQueryChange: (query: string) => void;
+}) {
   const stats = useMemo(() => SOURCES.map((source) => {
     const sourceJobs = jobs.filter((job) => job.source === source);
-    const newest = sourceJobs.reduce((latest, job) => job.createdAt > latest ? job.createdAt : latest, "");
-    return { source, count: sourceJobs.length, newest };
+    return { source, count: sourceJobs.length };
   }), [jobs]);
 
   return (
-    <div className="mb-5 grid grid-cols-2 border-y border-border lg:grid-cols-4">
-      {stats.map(({ source, count, newest }, index) => (
-        <div
-          key={source}
-          className={`min-h-24 px-4 py-4 ${index % 2 ? "border-l" : ""} lg:border-l lg:first:border-l-0`}
+    <section className="mb-6 flex flex-col gap-3 border-y border-border py-3 xl:flex-row xl:items-center" aria-label="Listing filters and source status">
+      <div className="flex min-w-0 flex-1 flex-wrap gap-1.5" role="group" aria-label="Filter jobs by source">
+        <button
+          type="button"
+          onClick={() => onSourceChange("all")}
+          aria-pressed={sourceFilter === "all"}
+          className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${sourceFilter === "all" ? "bg-foreground text-background" : "bg-muted/50 text-muted-foreground hover:bg-accent hover:text-foreground"}`}
         >
-          <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-            <span className="size-2 rounded-full" style={{ background: sourceColor(source) }} />
-            {sourceLabel(source)}
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-semibold tabular-nums">{count}</span>
-            <span className="text-sm text-muted-foreground">{newest ? `latest ${timeAgo(newest)}` : "awaiting import"}</span>
-          </div>
-        </div>
+          <span>All sources</span>
+          <span className="font-mono text-sm tabular-nums opacity-70">{jobs.length}</span>
+        </button>
+        {stats.map(({ source, count }) => (
+        <button
+          key={source}
+          type="button"
+          onClick={() => onSourceChange(source)}
+          aria-pressed={sourceFilter === source}
+          className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${sourceFilter === source ? "bg-foreground text-background" : "bg-muted/50 text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+        >
+          <span className="size-2 rounded-full" style={{ background: sourceColor(source) }} />
+          <span>{sourceLabel(source)}</span>
+          <span className="font-mono text-sm tabular-nums opacity-70">{count}</span>
+        </button>
       ))}
-    </div>
+      </div>
+      <div className="relative w-full shrink-0 xl:w-96">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(event) => onQueryChange(event.target.value)}
+          placeholder="Filter roles, companies, locations or skills"
+          aria-label="Filter job listings"
+          className="h-11 bg-background pl-10 pr-11"
+        />
+        {query && (
+          <Button variant="ghost" size="icon-sm" onClick={() => onQueryChange("")} aria-label="Clear search" className="absolute right-1.5 top-1/2 -translate-y-1/2">
+            <X className="size-4" />
+          </Button>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -622,7 +573,7 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
                 </div>
                 <div className="border-t pt-5">
                   <h3 className="text-sm font-semibold">About the company</h3>
-                  <div className="mt-3 grid gap-3 text-[15px] leading-7 text-foreground/80">
+                  <div className="mt-3 grid gap-3 text-base leading-7 text-foreground/80">
                     {effCompanyDesc}
                   </div>
                 </div>
@@ -646,6 +597,7 @@ export default function Dashboard({ initialJobs }: DashboardProps) {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [sourceFilter, setSourceFilter] = useState("all");
   const [query, setQuery] = useState("");
+  const [queryResult, setQueryResult] = useState<QueryResponse | null>(null);
   const [page, setPage] = useState(0);
   const jobs = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -662,53 +614,35 @@ export default function Dashboard({ initialJobs }: DashboardProps) {
   const pageCount = Math.ceil(jobs.length / PAGE_SIZE);
   const safePage = Math.min(page, Math.max(0, pageCount - 1));
   const visibleJobs = jobs.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+  const tableRows = (queryResult?.jobs ?? visibleJobs).map(jobToAdminRow);
 
   return (
     <div>
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="mb-1 text-sm font-bold uppercase tracking-wide text-primary">Indonesia job index</p>
-          <h1 className="text-3xl font-bold sm:text-4xl">Fresh opportunities</h1>
-          <p className="mt-2 text-base text-muted-foreground">Listings from the last seven days, normalized without hiding the source evidence.</p>
-        </div>
-        <div className="text-right"><div className="text-3xl font-bold tabular-nums">{initialJobs.length}</div><div className="text-sm font-medium text-muted-foreground">active listings</div></div>
+      <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h1 className="text-2xl font-bold sm:text-3xl">Fresh opportunities</h1>
+        <span className="text-sm font-medium text-muted-foreground"><strong className="font-semibold tabular-nums text-foreground">{initialJobs.length}</strong> active listings</span>
       </div>
 
-      <SourceSummary jobs={initialJobs} />
+      <section className="mb-5" aria-label="Find jobs">
+        <QueryBuilder onResult={setQueryResult} onReset={() => setQueryResult(null)} />
+      </section>
 
-      <div className="mb-3 flex items-center gap-1 overflow-x-auto border-b pb-3" role="group" aria-label="Filter jobs by source">
-        {["all", ...SOURCES].map((source) => (
-          <Button key={source} variant={sourceFilter === source ? "default" : "ghost"} size="sm" onClick={() => { setSourceFilter(source); setPage(0); }}>
-            {source === "all" ? "All sources" : sourceLabel(source)}
-          </Button>
-        ))}
-      </div>
+      <ListingsToolbar
+        jobs={initialJobs}
+        sourceFilter={sourceFilter}
+        onSourceChange={(source) => { setSourceFilter(source); setPage(0); setQueryResult(null); }}
+        query={query}
+        onQueryChange={(value) => { setQuery(value); setPage(0); setQueryResult(null); }}
+      />
 
-      <div className="relative mb-6 max-w-2xl">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={query}
-          onChange={(event) => { setQuery(event.target.value); setPage(0); }}
-          placeholder="Search roles, companies, locations or skills"
-          aria-label="Search jobs"
-          className="h-12 bg-background pl-10 pr-11"
-        />
-        {query && (
-          <Button variant="ghost" size="icon-sm" onClick={() => { setQuery(""); setPage(0); }} aria-label="Clear search" className="absolute right-1.5 top-1/2 -translate-y-1/2">
-            <X className="size-4" />
-          </Button>
-        )}
-      </div>
-
-      {visibleJobs.length ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {visibleJobs.map((job) => <ExploreJobCard key={`${job.source}-${job.sourceId || job.id}`} job={job} onOpen={() => setSelectedJob(job)} />)}
-        </div>
-      ) : initialJobs.length ? (
-        <div className="rounded-xl border bg-muted/25 px-6 py-16 text-center text-base text-muted-foreground">No jobs match this search and source filter.</div>
+      {(initialJobs.length || queryResult) ? (
+        <section className="overflow-hidden rounded-xl border bg-background" aria-label={queryResult ? "Query results" : "Job listings"}>
+          {!queryResult && <div className="border-b bg-muted/20 px-3 py-2 text-sm font-semibold">{jobs.length} listing{jobs.length === 1 ? "" : "s"}</div>}
+          <AdminDataTable rows={tableRows} onInspect={setSelectedJob} />
+        </section>
       ) : null}
 
-      {jobs.length > 0 && (
+      {!queryResult && jobs.length > 0 && (
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t pt-5">
           <p className="text-base text-muted-foreground">{jobs.length} listing{jobs.length === 1 ? "" : "s"}</p>
           <div className="flex items-center gap-3">

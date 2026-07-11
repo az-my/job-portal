@@ -3,14 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
-import { Sparkles, Database, FileSpreadsheet, BookOpen, ListTodo, Briefcase, Moon, Sun, Play } from "lucide-react";
+import { BookOpen, ListTodo, Briefcase, Moon, Sun, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const PAGES = [
   { href: "/", label: "Jobs", icon: Briefcase },
-  { href: "/query", label: "Query", icon: Sparkles },
-  { href: "/sources", label: "Sources", icon: Database },
-  { href: "/dataset", label: "Dataset", icon: FileSpreadsheet },
   { href: "/wiki", label: "Wiki", icon: BookOpen },
   { href: "/backlog", label: "Backlog", icon: ListTodo },
 ];
