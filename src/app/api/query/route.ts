@@ -1,4 +1,4 @@
-import { getJobs, SUPABASE_URL, SUPABASE_REST_KEY, type Job } from "@/lib/db";
+import { enrichedFieldsFromRow, getJobs, SUPABASE_URL, SUPABASE_REST_KEY, type Job } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -104,6 +104,7 @@ function rowToJob(row: Record<string, unknown>, index: number): Job {
     logoUrl: row.logo_url == null ? undefined : String(row.logo_url),
     raw: row.raw == null ? undefined : JSON.stringify(row.raw),
     createdAt: String(row.posted_at ?? new Date().toISOString()),
+    ...enrichedFieldsFromRow(row),
   };
 }
 

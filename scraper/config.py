@@ -53,6 +53,25 @@ GLINTS_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
 }
 
+KITALULUS_BASE = "https://www.kitalulus.com"
+KITALULUS_SITEMAP_INDEX = "https://www.kitalulus.com/sitemap.xml"
+
+KITALULUS_HEADERS = {
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+    "Referer": "https://www.kitalulus.com/",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+}
+
+PINTARNYA_API = "https://api.pintarnya.com/api/pk/job"
+
+PINTARNYA_HEADERS = {
+    "accept": "application/json",
+    "platform": "web-kerja",
+    "Referer": "https://pintarnya.com/",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+}
+
 DEALLS_HEADERS = {
     "accept": "*/*",
     "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",

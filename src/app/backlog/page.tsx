@@ -89,12 +89,12 @@ export default function BacklogPage() {
         {sections.map((section) => (
           <section key={section.title} className="glass glow-hover rounded-xl overflow-hidden">
             <h2
-              className={`font-display text-sm font-semibold px-5 pt-4 pb-3 flex items-center justify-between ${
+              className={`font-display text-base font-semibold px-5 pt-4 pb-3 flex items-center justify-between ${
                 HEADING_STYLE[section.title] ?? "text-muted-foreground"
               }`}
             >
               {section.title}
-              <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
+              <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-base text-muted-foreground">
                 {section.items.length}
               </span>
             </h2>

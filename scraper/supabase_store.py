@@ -38,6 +38,21 @@ def _to_row(job, now_iso):
         except json.JSONDecodeError:
             raw = None
 
+    # Keep enriched normalized values inside the existing jsonb column until
+    # the hosted schema gains dedicated columns. Source payload keys remain
+    # untouched and older readers simply ignore this envelope.
+    enriched_keys = (
+        "category", "skills", "workArrangement", "education", "experience",
+        "expiresAt", "benefits", "industry", "companySize", "vacancies",
+        "applicantCount", "activity",
+        "verified", "urgent", "salaryPeriod", "viewCount",
+    )
+    enriched = {key: job[key] for key in enriched_keys if job.get(key) is not None}
+    if enriched:
+        if not isinstance(raw, dict):
+            raw = {}
+        raw["_normalized"] = enriched
+
     return {
         "source": job["source"],
         "source_id": job["sourceId"],

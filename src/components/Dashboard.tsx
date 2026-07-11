@@ -54,7 +54,7 @@ interface ExploreMeta {
   sponsored: boolean;
 }
 
-const SOURCES = ["jobstreet", "dealls", "kalibrr", "glints"] as const;
+const SOURCES = ["jobstreet", "dealls", "kalibrr", "glints", "pintarnya", "kitalulus"] as const;
 const PAGE_SIZE = 12;
 
 function asRecord(value: unknown): JsonRecord {
@@ -229,27 +229,29 @@ function ListingsToolbar({
   return (
     <section className="mb-6 flex flex-col gap-3 border-y border-border py-3 xl:flex-row xl:items-center" aria-label="Listing filters and source status">
       <div className="flex min-w-0 flex-1 flex-wrap gap-1.5" role="group" aria-label="Filter jobs by source">
-        <button
+        <Button
           type="button"
           onClick={() => onSourceChange("all")}
           aria-pressed={sourceFilter === "all"}
-          className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${sourceFilter === "all" ? "bg-foreground text-background" : "bg-muted/50 text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+          variant="ghost"
+          className={`h-auto gap-2 rounded-full px-3 py-1.5 text-base font-semibold ${sourceFilter === "all" ? "bg-foreground text-background hover:bg-foreground/90 hover:text-background" : "bg-muted/50 text-muted-foreground"}`}
         >
           <span>All sources</span>
-          <span className="font-mono text-sm tabular-nums opacity-70">{jobs.length}</span>
-        </button>
+          <span className="font-mono text-base tabular-nums opacity-70">{jobs.length}</span>
+        </Button>
         {stats.map(({ source, count }) => (
-        <button
+        <Button
           key={source}
           type="button"
           onClick={() => onSourceChange(source)}
           aria-pressed={sourceFilter === source}
-          className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${sourceFilter === source ? "bg-foreground text-background" : "bg-muted/50 text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+          variant="ghost"
+          className={`h-auto gap-2 rounded-full px-3 py-1.5 text-base font-semibold ${sourceFilter === source ? "bg-foreground text-background hover:bg-foreground/90 hover:text-background" : "bg-muted/50 text-muted-foreground"}`}
         >
           <span className="size-2 rounded-full" style={{ background: sourceColor(source) }} />
           <span>{sourceLabel(source)}</span>
-          <span className="font-mono text-sm tabular-nums opacity-70">{count}</span>
-        </button>
+          <span className="font-mono text-base tabular-nums opacity-70">{count}</span>
+        </Button>
       ))}
       </div>
       <div className="relative w-full shrink-0 xl:w-96">
@@ -274,7 +276,7 @@ function ListingsToolbar({
 function Fact({ icon: Icon, label, value }: { icon: typeof MapPin; label: string; value: string }) {
   return (
     <div className="min-w-0 border-l-2 border-border pl-3">
-      <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-base font-medium text-muted-foreground">
         <Icon className="size-3.5" />
         {label}
       </div>
@@ -296,7 +298,6 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
   const kalibrrSlugValue = kalibrrSlug(job);
   const [kalibrrDetail, setKalibrrDetail] = useState<Record<string, unknown> | null>(null);
   const [kalibrrFailure, setKalibrrFailure] = useState<string | null>(null);
-  const kalibrrKey = `${kalibrrId}::${kalibrrCompanyCode}::${kalibrrSlugValue}`;
   const kalibrrLoading = job.source === "kalibrr" && Boolean(kalibrrId && kalibrrCompanyCode && kalibrrSlugValue) && !kalibrrDetail && !kalibrrFailure;
 
   useEffect(() => {
@@ -407,7 +408,6 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
   const glintsDescription = plainDraftJs(text(asRecord(glintsJob).descriptionJsonString));
   const glintsCompany = asRecord(asRecord(glintsJob).company);
   const glintsCompanyDesc = plainDraftJs(text(glintsCompany.descriptionJsonString));
-  const glintsCategory = asRecord(asRecord(glintsJob).hierarchicalJobCategory);
   const glintsSalaries = Array.isArray(asRecord(glintsJob).salaries) ? asRecord(glintsJob).salaries as unknown[] : [];
   const glintsSalaryText = glintsSalaries.length > 0
     ? glintsSalaries.map((s: unknown) => {
@@ -439,8 +439,8 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
   const effRequirements = job.source === "kalibrr" ? kalibrrDetailRequirements : job.source === "glints" ? job.requirements || "" : detailRequirements;
   const effEvidence = job.source === "kalibrr" ? kalibrrEvidence : job.source === "glints" ? glintsEvidence : evidence;
   const effCompanyName = job.source === "kalibrr" ? text(kalibrrCompanyObj.name) || text(kalibrrCompanyInfo.name) || text(companyProfile.name) || job.company : job.source === "glints" ? text(glintsCompany.name) || job.company : text(deallsCompany.name) || text(companyProfile.name) || job.company;
-  const effIndustry = job.source === "kalibrr" ? text(kalibrrCompanyInfo.industry) || text(overview.industry) : job.source === "glints" ? text(asRecord(glintsCompany.industry).name) : text(deallsCompany.sector) || text(overview.industry);
-  const effCompanySize = job.source === "kalibrr" ? "" : job.source === "glints" ? humanize(text(glintsCompany.size)) : text(asRecord(overview.size).description) || (asRecord(deallsCompany.size).start ? `${String(asRecord(deallsCompany.size).start)}–${String(asRecord(deallsCompany.size).end || "+")}` : "");
+  const effIndustry = job.industry || (job.source === "kalibrr" ? text(kalibrrCompanyInfo.industry) || text(overview.industry) : job.source === "glints" ? text(asRecord(glintsCompany.industry).name) : text(deallsCompany.sector) || text(overview.industry));
+  const effCompanySize = job.companySize || (job.source === "kalibrr" ? "" : job.source === "glints" ? humanize(text(glintsCompany.size)) : text(asRecord(overview.size).description) || (asRecord(deallsCompany.size).start ? `${String(asRecord(deallsCompany.size).start)}–${String(asRecord(deallsCompany.size).end || "+")}` : ""));
   const effWebsite = job.source === "kalibrr" ? text(kalibrrCompanyInfo.url) : job.source === "glints" ? text(glintsCompany.website) : text(deallsCompany.website) || text(asRecord(overview.website).url);
   const effCompanyDesc = job.source === "kalibrr" ? plainHtml(text(kalibrrCompanyInfo.description)) || plainHtml(text(kalibrrCompanyObj.description)) : job.source === "glints" ? (glintsCompanyDesc ? <p>{glintsCompanyDesc}</p> : <p className="text-muted-foreground">No company profile was returned for this listing.</p>) : (plainHtml(deallsCompany.description) ? <p>{plainHtml(deallsCompany.description)}</p> : profileParagraphs.length ? profileParagraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p className="text-muted-foreground">No company profile was returned for this listing.</p>);
   const effStatus = job.source === "kalibrr" ? "" : job.source === "glints" ? "" : status;
@@ -470,7 +470,7 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
               <div className="mb-1.5 flex flex-wrap items-center gap-2">
                 <SourceBadge source={job.source} />
                 {effStatus && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-mint">
+                  <span className="inline-flex items-center gap-1 text-base font-medium text-mint">
                     <CheckCircle2 className="size-3.5" />{effStatus}
                   </span>
                 )}
@@ -497,16 +497,16 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
 
           <div className="max-h-[68vh] overflow-y-auto">
             {job.source === "dealls" && deallsLoading && (
-              <div className="border-b bg-muted/35 px-5 py-2 text-xs text-muted-foreground sm:px-6">Loading fresh Dealls details…</div>
+              <div className="border-b bg-muted/35 px-5 py-2 text-base text-muted-foreground sm:px-6">Loading fresh Dealls details…</div>
             )}
             {job.source === "dealls" && deallsError && (
-              <div className="border-b bg-destructive/10 px-5 py-2 text-xs text-destructive sm:px-6">{deallsError}. Showing stored listing data.</div>
+              <div className="border-b bg-destructive/10 px-5 py-2 text-base text-destructive sm:px-6">{deallsError}. Showing stored listing data.</div>
             )}
             {job.source === "kalibrr" && kalibrrLoading && (
-              <div className="border-b bg-muted/35 px-5 py-2 text-xs text-muted-foreground sm:px-6">Loading fresh Kalibrr details…</div>
+              <div className="border-b bg-muted/35 px-5 py-2 text-base text-muted-foreground sm:px-6">Loading fresh Kalibrr details…</div>
             )}
             {job.source === "kalibrr" && kalibrrFailure && (
-              <div className="border-b bg-destructive/10 px-5 py-2 text-xs text-destructive sm:px-6">{kalibrrFailure}. Showing stored listing data.</div>
+              <div className="border-b bg-destructive/10 px-5 py-2 text-base text-destructive sm:px-6">{kalibrrFailure}. Showing stored listing data.</div>
             )}
             <TabsContent value="overview" className="m-0">
               <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_260px]">
@@ -525,6 +525,24 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
                     </p>
                   </section>
 
+                  {(job.experience || job.education || job.skills?.length) && (
+                    <section className="border-t py-6">
+                      <h2 className="text-base font-bold">Candidate profile</h2>
+                      <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+                        {job.experience && <div><dt className="text-base text-muted-foreground">Experience</dt><dd className="mt-1 font-medium">{job.experience}</dd></div>}
+                        {job.education && <div><dt className="text-base text-muted-foreground">Education</dt><dd className="mt-1 font-medium">{job.education}</dd></div>}
+                      </dl>
+                      {!!job.skills?.length && <div className="mt-4 flex flex-wrap gap-2" aria-label="Skills">{job.skills.map((skill) => <span key={skill} className="rounded-full bg-muted px-2.5 py-1 text-base text-muted-foreground">{skill}</span>)}</div>}
+                    </section>
+                  )}
+
+                  {!!job.benefits?.length && (
+                    <section className="border-t py-6">
+                      <h2 className="text-base font-bold">What you get</h2>
+                      <ul className="mt-3 grid gap-2 sm:grid-cols-2">{job.benefits.map((benefit) => <li key={benefit} className="flex gap-2 text-base"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-mint" />{benefit}</li>)}</ul>
+                    </section>
+                  )}
+
                   {(bullets.length > 0 || effRequirements) && (
                     <section className="border-t py-6">
                       <h2 className="text-base font-bold">Highlights and requirements</h2>
@@ -539,19 +557,25 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
                 </div>
 
                 <aside className="border-t bg-muted/35 px-5 py-5 lg:border-l lg:border-t-0">
-                  <h2 className="text-xs font-semibold uppercase text-muted-foreground">Listing intelligence</h2>
+                  <h2 className="text-base font-semibold uppercase text-muted-foreground">Listing intelligence</h2>
                   <dl className="mt-4 grid gap-4 text-base">
                     <div><dt className="text-muted-foreground">Published</dt><dd className="mt-1 font-medium">{formatDate(job.createdAt)}</dd></div>
-                    <div><dt className="text-muted-foreground">Expires</dt><dd className="mt-1 font-medium">{formatDate(expiry)}</dd></div>
-                    <div><dt className="text-muted-foreground">Source ID</dt><dd className="mt-1 font-mono text-xs">{job.sourceId || "Not provided"}</dd></div>
+                    <div><dt className="text-muted-foreground">Application deadline</dt><dd className="mt-1 font-medium">{formatDate(job.expiresAt || expiry)}</dd></div>
+                    {job.vacancies != null && <div><dt className="text-muted-foreground">Open positions</dt><dd className="mt-1 font-medium tabular-nums">{job.vacancies}</dd></div>}
+                    {job.applicantCount != null && <div><dt className="text-muted-foreground">Applicants at capture</dt><dd className="mt-1 font-medium tabular-nums">{job.applicantCount}</dd></div>}
+                    {job.viewCount != null && <div><dt className="text-muted-foreground">Views at capture</dt><dd className="mt-1 font-medium tabular-nums">{job.viewCount}</dd></div>}
+                    {job.verified != null && <div><dt className="text-muted-foreground">Company verification</dt><dd className="mt-1 font-medium">{job.verified ? "Verified by source" : "Not verified by source"}</dd></div>}
+                    {job.urgent && <div><dt className="text-muted-foreground">Hiring status</dt><dd className="mt-1 font-medium text-primary">Urgent hiring</dd></div>}
+                    {!!job.activity?.length && <div><dt className="text-muted-foreground">Source signals</dt><dd className="mt-1 flex flex-wrap gap-1.5">{job.activity.map((signal) => <span key={signal} className="rounded-full bg-background px-2 py-1 text-base font-medium">{signal}</span>)}</dd></div>}
+                    <div><dt className="text-muted-foreground">Source ID</dt><dd className="mt-1 font-mono text-base">{job.sourceId || "Not provided"}</dd></div>
                   </dl>
                   {questions.length > 0 && (
                     <div className="mt-6 border-t pt-5">
-                      <h2 className="flex items-center gap-2 text-sm font-semibold"><ClipboardCheck className="size-4" />Screening questions</h2>
-                      <ol className="mt-3 grid gap-3 text-sm leading-5 text-muted-foreground">
+                      <h2 className="flex items-center gap-2 text-base font-semibold"><ClipboardCheck className="size-4" />Screening questions</h2>
+                      <ol className="mt-3 grid gap-3 text-base leading-5 text-muted-foreground">
                         {questions.map((question, index) => {
                           const questionRecord = asRecord(question);
-                          return <li key={index}><span className="mr-2 font-mono text-xs text-foreground">{String(index + 1).padStart(2, "0")}</span>{text(questionRecord.question) || text(questionRecord.title) || text(question)}</li>;
+                          return <li key={index}><span className="mr-2 font-mono text-base text-foreground">{String(index + 1).padStart(2, "0")}</span>{text(questionRecord.question) || text(questionRecord.title) || text(question)}</li>;
                         })}
                       </ol>
                     </div>
@@ -564,7 +588,7 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
               <div className="max-w-3xl">
                 <div className="flex items-center gap-3 border-b pb-5">
                   <Building2 className="size-5 text-muted-foreground" />
-                  <div><h2 className="font-semibold">{effCompanyName}</h2><p className="text-sm text-muted-foreground">{effIndustry || "Industry not provided"}</p></div>
+                  <div><h2 className="font-semibold">{effCompanyName}</h2><p className="text-base text-muted-foreground">{effIndustry || "Industry not provided"}</p></div>
                 </div>
                 <div className="grid gap-5 py-5 sm:grid-cols-3">
                   <Fact icon={Building2} label="Company size" value={effCompanySize || "Not provided"} />
@@ -572,7 +596,7 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
                   <Fact icon={ExternalLink} label="Website" value={effWebsite || "Not provided"} />
                 </div>
                 <div className="border-t pt-5">
-                  <h3 className="text-sm font-semibold">About the company</h3>
+                  <h3 className="text-base font-semibold">About the company</h3>
                   <div className="mt-3 grid gap-3 text-base leading-7 text-foreground/80">
                     {effCompanyDesc}
                   </div>
@@ -581,8 +605,8 @@ function JobDetailDialog({ job, open, onOpenChange }: { job: Job; open: boolean;
             </TabsContent>
 
             <TabsContent value="evidence" className="m-0 p-4 sm:p-6">
-              <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground"><FileJson className="size-4" />Untouched source response used for audit and parser debugging</div>
-              <pre className="overflow-x-auto rounded-md border bg-background p-4 font-mono text-xs leading-5 whitespace-pre-wrap break-words">
+              <div className="mb-3 flex items-center gap-2 text-base text-muted-foreground"><FileJson className="size-4" />Untouched source response used for audit and parser debugging</div>
+              <pre className="overflow-x-auto rounded-md border bg-background p-4 font-mono text-base leading-5 whitespace-pre-wrap break-words">
                 {effEvidence && Object.keys(effEvidence).length ? JSON.stringify(effEvidence, null, 2) : "No raw data available"}
               </pre>
             </TabsContent>
@@ -605,7 +629,7 @@ export default function Dashboard({ initialJobs }: DashboardProps) {
       if (sourceFilter !== "all" && job.source !== sourceFilter) return false;
       if (!needle) return true;
       const meta = exploreMeta(job);
-      return [job.title, job.company, job.location, job.salary, meta.category, ...meta.workSetup, ...meta.highlights, ...meta.signals]
+      return [job.title, job.company, job.location, job.salary, job.salaryPeriod, job.category, job.education, job.experience, job.industry, job.workArrangement, ...(job.skills || []), ...(job.benefits || []), ...(job.activity || []), meta.category, ...meta.workSetup, ...meta.highlights, ...meta.signals]
         .join(" ")
         .toLowerCase()
         .includes(needle);
@@ -618,11 +642,6 @@ export default function Dashboard({ initialJobs }: DashboardProps) {
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <h1 className="text-2xl font-bold sm:text-3xl">Fresh opportunities</h1>
-        <span className="text-sm font-medium text-muted-foreground"><strong className="font-semibold tabular-nums text-foreground">{initialJobs.length}</strong> active listings</span>
-      </div>
-
       <section className="mb-5" aria-label="Find jobs">
         <QueryBuilder onResult={setQueryResult} onReset={() => setQueryResult(null)} />
       </section>
@@ -637,7 +656,7 @@ export default function Dashboard({ initialJobs }: DashboardProps) {
 
       {(initialJobs.length || queryResult) ? (
         <section className="overflow-hidden rounded-xl border bg-background" aria-label={queryResult ? "Query results" : "Job listings"}>
-          {!queryResult && <div className="border-b bg-muted/20 px-3 py-2 text-sm font-semibold">{jobs.length} listing{jobs.length === 1 ? "" : "s"}</div>}
+          {!queryResult && <div className="border-b bg-muted/20 px-3 py-2 text-base font-semibold">{jobs.length} listing{jobs.length === 1 ? "" : "s"}</div>}
           <AdminDataTable rows={tableRows} onInspect={setSelectedJob} />
         </section>
       ) : null}
@@ -649,7 +668,7 @@ export default function Dashboard({ initialJobs }: DashboardProps) {
             <Button variant="outline" size="sm" disabled={safePage === 0} onClick={() => setPage((current) => Math.max(0, current - 1))}>
               <ChevronLeft className="size-4" /> Previous
             </Button>
-            <span className="min-w-24 text-center text-sm font-semibold tabular-nums text-muted-foreground">Page {safePage + 1} of {pageCount}</span>
+            <span className="min-w-24 text-center text-base font-semibold tabular-nums text-muted-foreground">Page {safePage + 1} of {pageCount}</span>
             <Button variant="outline" size="sm" disabled={safePage >= pageCount - 1} onClick={() => setPage((current) => Math.min(pageCount - 1, current + 1))}>
               Next <ChevronRight className="size-4" />
             </Button>
@@ -658,7 +677,7 @@ export default function Dashboard({ initialJobs }: DashboardProps) {
       )}
 
       {!initialJobs.length && (
-        <div className="mt-8 flex items-start gap-3 border-l-2 border-primary bg-muted/40 px-4 py-3 text-sm">
+        <div className="mt-8 flex items-start gap-3 border-l-2 border-primary bg-muted/40 px-4 py-3 text-base">
           <SearchX className="mt-0.5 size-4 shrink-0 text-primary" />
           <div><p className="font-medium">Ready for the enriched rebuild</p><p className="mt-1 text-muted-foreground">The local and Supabase datasets are empty. The next JobStreet run will collect full descriptions, salary labels, branding and screening metadata.</p></div>
         </div>

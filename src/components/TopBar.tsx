@@ -59,7 +59,7 @@ export function TopBar() {
           </span>
           <span className="text-base font-bold tracking-tight">
             KerjaRadar
-            <span className="ml-2 hidden text-sm font-medium text-muted-foreground sm:inline">
+            <span className="ml-2 hidden text-base font-medium text-muted-foreground sm:inline">
               jobs
             </span>
           </span>
@@ -75,7 +75,7 @@ export function TopBar() {
                   href={href}
                   aria-label={label}
                   title={label}
-                  className={`inline-flex min-h-10 items-center gap-1.5 rounded-full px-3.5 py-2 text-[15px] font-semibold transition-colors ${
+                  className={`inline-flex min-h-10 items-center gap-1.5 rounded-full px-3.5 py-2 text-base font-semibold transition-colors ${
                     active
                       ? "bg-foreground text-background"
                       : "text-muted-foreground hover:bg-accent hover:text-foreground"

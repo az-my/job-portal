@@ -3,6 +3,8 @@
 import { useState } from "react";
 import type { Job } from "@/lib/db";
 import { ChevronDown, ChevronUp, Loader2, Search, TriangleAlert, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export interface QueryResponse {
   q: string;
@@ -71,62 +73,64 @@ export function QueryBuilder({ onResult, onReset }: { onResult?: (result: QueryR
       >
         <div className="flex items-center gap-2 rounded-xl border bg-background p-1 pl-3 focus-within:ring-2 focus-within:ring-ring/40">
           <Search className="size-4 shrink-0 text-muted-foreground" />
-          <input
+          <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Describe the job you want, in English or Indonesian…"
-            className="h-9 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            aria-label="Describe the job you want"
+            className="h-11 w-full border-0 bg-transparent text-base shadow-none focus-visible:ring-0"
           />
           {(q || res) && (
-            <button type="button" onClick={reset} className="grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Reset job search" title="Reset search">
+            <Button type="button" variant="ghost" size="icon-sm" onClick={reset} className="shrink-0 text-muted-foreground" aria-label="Reset job search" title="Reset search">
               <X className="size-4" />
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:brightness-110 disabled:opacity-60"
+            className="h-11 shrink-0 px-4 text-base"
           >
             {loading ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
             {loading ? "Searching…" : "Search jobs"}
-          </button>
+          </Button>
         </div>
       </form>
 
       <div className="flex flex-wrap items-center gap-1.5" aria-label="Suggested job searches">
-        <span className="mr-1 text-sm font-medium text-muted-foreground">Try:</span>
+        <span className="mr-1 text-base font-medium text-muted-foreground">Try:</span>
         {EXAMPLES.filter((example) => example !== q).slice(0, showMore ? EXAMPLES.length : 4).map((example) => (
-          <button
+          <Button
             key={example}
             type="button"
             onClick={() => {
               setQ(example);
               run(example);
             }}
-            className="rounded-full bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            variant="ghost"
+            className="h-auto rounded-full bg-muted/50 px-3 py-1.5 text-base text-muted-foreground"
           >
             {example}
-          </button>
+          </Button>
         ))}
-        <button type="button" onClick={() => setShowMore((value) => !value)} className="inline-flex items-center gap-1 px-2 py-1.5 text-sm font-semibold text-primary hover:text-foreground">
+        <Button type="button" variant="ghost" onClick={() => setShowMore((value) => !value)} className="h-auto px-2 py-1.5 text-base font-semibold text-primary">
           {showMore ? <>Less <ChevronUp className="size-3.5" /></> : <>More suggestions <ChevronDown className="size-3.5" /></>}
-        </button>
+        </Button>
       </div>
 
       {error && (
-        <div className="mt-2 text-sm text-destructive">
+        <div className="mt-2 text-base text-destructive">
           {error}
         </div>
       )}
 
       {res && (
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-base text-muted-foreground">
           {res.mode === "fallback" && <TriangleAlert className="size-3.5 text-glints" />}
           <span className="font-semibold text-foreground">{res.count} matching job{res.count === 1 ? "" : "s"}</span>
           <span aria-hidden>·</span>
           <span>{res.mode === "fallback" ? "Basic keyword matches" : "Filters applied"}</span>
           {res.llmError && <span>· {res.llmError}</span>}
-          <button type="button" onClick={reset} className="font-semibold text-primary hover:text-foreground">Reset</button>
+          <Button type="button" variant="link" onClick={reset} className="h-auto p-0 text-base font-semibold">Reset</Button>
         </div>
       )}
     </div>

@@ -6,6 +6,8 @@ export const SOURCE_COLOR: Record<string, string> = {
   dealls: "var(--source-dealls)",
   kalibrr: "var(--source-kalibrr)",
   glints: "var(--source-glints)",
+  pintarnya: "var(--source-pintarnya)",
+  kitalulus: "var(--source-kitalulus)",
 };
 
 export const SOURCE_LABEL: Record<string, string> = {
@@ -13,6 +15,8 @@ export const SOURCE_LABEL: Record<string, string> = {
   dealls: "Dealls",
   kalibrr: "Kalibrr",
   glints: "Glints",
+  pintarnya: "Pintarnya",
+  kitalulus: "Kitalulus",
 };
 
 export function sourceColor(source?: string): string {

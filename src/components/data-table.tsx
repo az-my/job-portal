@@ -151,7 +151,7 @@ export function DataTable<TData, TValue>({
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-[15px] text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           {table.getFilteredRowModel().rows.length} listing{table.getFilteredRowModel().rows.length !== 1 ? "s" : ""}
         </p>
         <div className="flex items-center gap-2">
@@ -175,7 +175,7 @@ export function DataTable<TData, TValue>({
           >
             <ChevronLeft className="size-4" />
           </Button>
-          <span className="text-[15px] font-medium text-muted-foreground tabular-nums">
+          <span className="text-base font-medium text-muted-foreground tabular-nums">
             Page {table.getPageCount() ? table.getState().pagination.pageIndex + 1 : 0} of {table.getPageCount()}
           </span>
           <Button

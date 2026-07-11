@@ -45,6 +45,8 @@
   --color-dealls: var(--source-dealls);
   --color-kalibrr: var(--source-kalibrr);
   --color-glints: var(--source-glints);
+  --color-pintarnya: var(--source-pintarnya);
+  --color-kitalulus: var(--source-kitalulus);
   --color-mint: var(--mint);
   --color-cyan-glow: var(--cyan-glow);
   --radius-sm: calc(var(--radius) * 0.6);
@@ -82,6 +84,8 @@
   --source-dealls: #c2185b;
   --source-kalibrr: #00897b;
   --source-glints: #f57c00;
+  --source-pintarnya: #7b1fa2;
+  --source-kitalulus: #e91e63;
   --mint: #008060;
   --cyan-glow: #065fd4;
 

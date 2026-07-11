@@ -81,7 +81,7 @@ function KvTable({ rows, mono = false }: { rows: [string, string][]; mono?: bool
           {rows.map(([k, v]) => (
             <tr key={k} className="align-top hover:bg-accent/40 transition-colors">
               <td className="px-5 py-2.5 font-medium w-1/3">{k}</td>
-              <td className={`px-3 py-2.5 text-muted-foreground ${mono ? "font-mono text-xs" : ""}`}>{v}</td>
+              <td className={`px-3 py-2.5 text-muted-foreground ${mono ? "font-mono text-base" : ""}`}>{v}</td>
             </tr>
           ))}
         </tbody>
@@ -93,7 +93,7 @@ function KvTable({ rows, mono = false }: { rows: [string, string][]; mono?: bool
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="glass rounded-xl overflow-hidden mb-4">
-      <h2 className="font-display text-sm font-semibold text-muted-foreground px-5 pt-4 pb-3">{title}</h2>
+      <h2 className="font-display text-base font-semibold text-muted-foreground px-5 pt-4 pb-3">{title}</h2>
       {children}
     </section>
   );
@@ -117,7 +117,7 @@ export default function WikiPage() {
 
       <Section title="Architecture">
         <div className="px-5 pb-4 space-y-3">
-          <pre className="font-mono text-xs leading-relaxed overflow-x-auto rounded-lg border border-border/60 bg-background/60 p-4">
+          <pre className="font-mono text-base leading-relaxed overflow-x-auto rounded-lg border border-border/60 bg-background/60 p-4">
 {`GitHub Actions (daily 08:00 WIB / manual dispatch)
         │
         ▼

@@ -14,6 +14,8 @@ import dealls
 import glints
 import jobstreet
 import kalibrr
+import kitalulus
+import pintarnya
 import supabase_store
 from normalize import normalize_jobs
 from storage import cleanup_jobs, get_stats, merge_jobs
@@ -24,6 +26,8 @@ SOURCES = {
     "dealls": (dealls.collect_jobs, "publishedAt"),
     "kalibrr": (kalibrr.collect_jobs, "activation_date"),
     "glints": (glints.collect_jobs, "createdAt"),
+    "pintarnya": (pintarnya.collect_jobs, "published_at"),
+    "kitalulus": (kitalulus.collect_jobs, "datePosted"),
 }
 
 VALID_SOURCES = ("all", *SOURCES)
